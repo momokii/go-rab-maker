@@ -1,0 +1,175 @@
+package components
+
+import (
+    "github.com/momokii/go-rab-maker/backend/models"
+	"strconv"
+)
+
+templ CountriesTablePage(countries []models.Country, paginationInfo models.PaginationInfo, config models.TableConfig) {
+    <div id="data-table-content"
+         hx-trigger="refreshTable from:body"
+         hx-get="/"
+         hx-target="this"
+         hx-include="[name='search'], [name='per_page']">
+        @TableContent() {
+            @TableHeader() {
+                <tr>
+                    <th>
+                        <label>
+                            <input type="checkbox" class="checkbox" />
+                        </label>
+                    </th>
+                    <th>Flag</th>
+                    <th>Name</th>
+                    <th>Code</th>
+                    <th>Dial Code</th>
+                    <th>Actions</th>
+                </tr>
+            }
+            @TableBody() {
+                for _, country := range countries {
+                    <tr class="hover">
+                        <th>
+                            <label>
+                                <input type="checkbox" class="checkbox" />
+                            </label>
+                        </th>
+                        <td>
+                            <div class="avatar">
+                                <div class="w-12 rounded">
+                                    <img src={country.FlagURL} alt={country.Name + " flag"} />
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="font-bold">{country.Name}</div>
+                            <div class="text-sm opacity-50 truncate max-w-xs">{country.Description}</div>
+                        </td>
+                        <td>{country.Code}</td>
+                        <td>{country.DialCode}</td>
+                        <td>
+                            <div class="join">
+                                <a href={templ.SafeURL("/countries/" + country.Code)} 
+                                    class="btn btn-ghost btn-sm join-item">
+                                    View
+                                </a>
+                                <button class="btn btn-ghost btn-sm join-item"
+                                    hx-get={"/countries/" + strconv.Itoa(country.ID) + "/edit"}
+                                    hx-target="#htmx-modal-container">
+                                    Edit
+                                </button>
+                                <button class="btn btn-ghost btn-error btn-sm join-item"
+                                    hx-get={"/countries/" + strconv.Itoa(country.ID) + "/delete"}
+                                    hx-target="#htmx-modal-container">
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+
+            if config.PaginationEnabled {
+                <!-- Pagination -->
+                @TablePagination(paginationInfo, config.BaseURL)
+            }
+        }
+    </div>
+}
+
+// Country Form Modal - Example implementation for create/edit
+templ CountryFormModal(title, action, formId, submitLabel string, country models.Country) {
+    @BaseFormModal(ModalConfig{
+        Title: title,
+        Size: ModalMedium,
+        ShowClose: true,
+        FormId: formId,
+        FormAction: action,
+        Target: "#htmx-modal-container",
+        SubmitLabel: submitLabel,
+    }) {
+        <!-- Will using it when edit form used -->
+        <input type="hidden" name="ID" value={country.ID} />
+
+        <!-- Country Form Fields -->
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Country Name</span>
+            </label>
+            <input type="text" 
+                   name="name" 
+                   value={country.Name}
+                   class="input input-bordered w-full" 
+                   required
+            />
+        </div>
+
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Country Code</span>
+            </label>
+            <input type="text" 
+                   name="code" 
+                   value={country.Code}
+                   class="input input-bordered w-full" 
+                   required
+            />
+        </div>
+
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Dial Code</span>
+            </label>
+            <input type="text" 
+                   name="dialCode" 
+                   value={country.DialCode}
+                   class="input input-bordered w-full" 
+                   required
+            />
+        </div>
+
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Description</span>
+            </label>
+            <textarea name="description" 
+                      class="textarea textarea-bordered w-full" 
+                      required>{country.Description}</textarea>
+        </div>
+
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Flag URL</span>
+            </label>
+            <input type="url" 
+                   name="flagURL" 
+                   value={country.FlagURL}
+                   class="input input-bordered w-full" 
+            />
+        </div>
+    }
+}
+
+templ CountriesPage(countries []models.Country, paginationInfo models.PaginationInfo, config models.TableConfig) {
+    @BaseMainApp("Countries Table") {
+        <div class="w-full p-4">
+            <!-- Action Buttons -->
+            <div class="flex justify-end mb-4">
+                <button class="btn btn-primary"
+                        hx-get="/countries/new"
+                        hx-target="#htmx-modal-container"
+                        hx-swap="innerHTML"
+                        >
+                    Add Country
+                </button>
+            </div>
+
+            @DataTable(
+                config, 
+                paginationInfo,
+            ) {
+                @CountriesTablePage(countries, paginationInfo, config)
+            }
+        </div>
+    }
+}

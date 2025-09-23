@@ -1,0 +1,206 @@
+package components
+
+// sidebarMenuTitle adalah komponen untuk judul seksi di dalam menu sidebar.
+templ sidebarMenuTitle(title string) {
+	<li class="menu-title text-base font-medium opacity-70 mt-4 first:mt-2">{ title }</li>
+}
+
+// sidebarMenuItem adalah komponen untuk setiap item menu navigasi.
+// Ikon SVG dimasukkan sebagai children.
+templ sidebarMenuItem(href, text string) {
+	<li>
+		<a href={ templ.SafeURL(href) } class="flex items-center gap-4 h-12 text-base hover:bg-base-200 active:bg-primary active:text-primary-content rounded-xl transition-all duration-200">
+			{ children... }
+			<span class="font-medium">{ text }</span>
+		</a>
+	</li>
+}
+
+// sidebarLogoutItem adalah komponen khusus untuk tombol logout dengan styling dan atribut HTMX.
+templ sidebarLogoutItem() {
+	<li>
+		<a
+ 			hx-post="/logout"
+ 			hx-target="body"
+ 			hx-swap="none"
+ 			hx-indicator="#htmx-loading"
+ 			class="flex items-center gap-4 h-12 text-base text-error hover:bg-error/10 active:bg-error active:text-error-content rounded-xl transition-all duration-200 cursor-pointer"
+		>
+			<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+			</svg>
+			<span class="font-medium">Logout</span>
+		</a>
+	</li>
+}
+
+// SideBar adalah komponen utama sidebar yang telah diperbaiki.
+templ SideBar() {
+	<div class="drawer-side z-50">
+		<label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+		
+		<div class="menu min-h-full w-72 bg-base-100 text-base-content flex flex-col p-0">
+			<div class="bg-primary text-primary-content p-4 flex items-center justify-between">
+				<div class="flex items-center gap-3">
+					<div class="w-10 h-10">
+						<svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+						</svg>
+					</div>
+					<span class="text-xl font-bold tracking-wide">Admin</span>
+				</div>
+				<label for="main-drawer" class="btn btn-circle btn-ghost btn-sm text-primary-content hover:bg-primary-focus lg:hidden">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+					</svg>
+				</label>
+			</div>
+
+			<div class="flex-1 overflow-y-auto">
+				<ul class="menu px-2 py-4 text-base-content flex flex-col gap-2">
+					@sidebarMenuTitle("Main Menu")
+					@sidebarMenuItem("/", "Dashboard") {
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z"></path>
+						</svg>
+					}
+					@sidebarMenuItem("/countries", "Countries") {
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"></path>
+						</svg>
+					}
+					// ... item menu lainnya
+                    @sidebarLogoutItem()
+				</ul>
+			</div>
+
+			<div class="p-4 border-t border-base-200">
+				<div class="flex items-center gap-3 p-3 rounded-xl hover:bg-base-200 transition-all duration-200 cursor-pointer">
+					<div class="avatar placeholder">
+						<div class="bg-primary text-primary-content rounded-full w-10">
+							<span class="text-lg font-medium">A</span>
+						</div>
+					</div>
+					<div class="flex-1 min-w-0">
+						<p class="font-medium text-base truncate">Admin User</p>
+						<p class="text-sm opacity-70 truncate">admin@example.com</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+templ Base(title string) {
+    <html data-theme="light">
+        <head>
+            <title>{title}</title>
+            // <link rel="stylesheet" href="/static/css/styles.css">
+
+            // tailwind
+            <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+            <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+            // daisyUI
+            <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+
+            // htmx
+            <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.7/dist/htmx.js" integrity="sha384-yWakaGAFicqusuwOYEmoRjLNOC+6OFsdmwC2lbGQaRELtuVEqNzt11c2J711DeCZ" crossorigin="anonymous"></script>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        </head>
+        <body class="bg-gray-50 font-inter">
+            
+            <!-- HTMX-Optimized Components -->
+            @HTMXLoadingSpinner()
+            @HTMXModalContainer()
+
+            <!-- Main Content -->
+            { children... }
+            
+            <script>
+                // Modal utility function
+                function closeModal() {
+                    const modalContainer = document.getElementById('htmx-modal-container');
+                    if (modalContainer) {
+                        modalContainer.innerHTML = '';
+                    }
+                }
+            </script>
+            
+        </body>
+    </html>
+}
+
+templ MainContentApp(title string) {
+    <div class="drawer">
+        <input id="main-drawer" type="checkbox" class="drawer-toggle" />
+        
+        <!-- Page content -->
+        <div class="drawer-content flex flex-col min-h-screen bg-base-200">
+            <!-- Top Header -->
+            <div class="sticky top-0 z-20 navbar bg-base-100 shadow-md">
+                <div class="navbar-start">
+                    <label for="main-drawer" class="btn btn-ghost drawer-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </label>
+                    <h2 class="text-xl font-semibold ml-2">{title}</h2>
+                </div>
+                <div class="navbar-end">
+                    <div class="flex gap-2">
+                        <button class="btn btn-ghost btn-circle">
+                            <div class="indicator">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4 19h5c.552 0 1-.448 1-1v-5c0-.552-.448-1-1-1H4c-.552 0-1 .448-1 1v5c0 .552.448 1 1 1z"></path>
+                                </svg>
+                                <span class="badge badge-xs badge-primary indicator-item">3</span>
+                            </div>
+                        </button>
+                        <div class="dropdown dropdown-end">
+                            <div tabindex="0" class="btn btn-ghost btn-circle">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                </svg>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                                <li><button onclick="document.documentElement.setAttribute('data-theme', 'light')" class="active:bg-primary/20">Light mode</button></li>
+                                <li><button onclick="document.documentElement.setAttribute('data-theme', 'dark')" class="active:bg-primary/20">Dark mode</button></li>
+                                <li><button onclick="document.documentElement.setAttribute('data-theme', 'emerald')" class="active:bg-primary/20">Default theme</button></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <main class="flex-1 overflow-auto p-4 lg:p-6">
+                <div class="max-w-7xl mx-auto">
+                    { children... }
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer class="footer footer-center p-4 bg-base-300 text-base-content">
+                <aside>
+                    <p>&copy; 2024 Admin Panel. All rights reserved.</p>
+                </aside>
+            </footer>
+        </div>
+        
+        <!-- Sidebar Component -->
+        @SideBar()
+    </div>  
+}
+
+templ BaseMainApp(title string) {
+    @Base(title) {
+        @MainContentApp(title) {
+            { children... }
+        }
+    }
+}
+

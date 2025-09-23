@@ -1,0 +1,221 @@
+package components 
+
+
+
+// ternary is a helper function to simulate the ternary operator
+func ternary(condition bool, trueVal string, falseVal string) string {
+    if condition {
+        return trueVal
+    }
+    return falseVal
+}
+
+// HTMX-Optimized Loading Spinner - Auto show/hide with HTMX requests
+// Using Daisy UI loading component with backdrop
+templ HTMXLoadingSpinner() {
+    <div id="htmx-loading" class="htmx-indicator fixed inset-0 z-[9999] flex items-center justify-center">
+        <!-- Backdrop with blur -->
+        <div class="fixed inset-0 bg-black/30 backdrop-blur-sm z-99">
+            <!-- Centered loading container -->
+            <div class="fixed inset-0 flex items-center justify-center">
+                <div class="card bg-base-100 shadow-xl">
+                    <div class="card-body items-center text-center">
+                        <!-- Daisy UI loading spinner -->
+                        <span class="loading loading-spinner loading-lg text-primary"></span>
+                        <p class="mt-4 text-base-content/70">Processing your request...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+// HTMX-Optimized Modal Container - Server-rendered content
+templ HTMXModalContainer() {
+    <div id="htmx-modal-container" class="htmx-modal-wrapper"></div>
+}
+
+// HTMX Modal Success Template - Using Daisy UI modal component
+templ HTMXModalSuccess(title string, message string) {
+    <div class="htmx-modal-wrapper" 
+         onclick="if(event.target === this) closeModal()"
+         hx-swap-oob="innerHTML:#htmx-modal-container">
+        <!-- Modal using Daisy UI -->
+        <dialog class="modal modal-open">
+            <div class="modal-box" onclick="event.stopPropagation()">
+                <!-- Header with success icon -->
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="alert alert-success">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-lg">{title}</h3>
+                </div>
+                
+                <!-- Message -->
+                <p class="py-4">{message}</p>
+                
+                <!-- Actions -->
+                <div class="modal-action">
+                    <button onclick="closeModal()" class="btn btn-success">OK</button>
+                </div>
+            </div>
+            <div class="modal-backdrop bg-black/30 backdrop-blur-sm"></div>
+        </dialog>
+    </div>
+}
+
+// HTMX Modal Success Template - Direct target version
+templ HTMXModalSuccessDirect(title string, message string) {
+    <div class="htmx-modal-wrapper" 
+         onclick="if(event.target === this) closeModal()">
+        <!-- Modal using Daisy UI -->
+        <dialog class="modal modal-open">
+            <div class="modal-box" onclick="event.stopPropagation()">
+                <!-- Header with success icon -->
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="alert alert-success">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-lg">{title}</h3>
+                </div>
+                
+                <!-- Message -->
+                <p class="py-4">{message}</p>
+                
+                <!-- Actions -->
+                <div class="modal-action">
+                    <button onclick="closeModal()" class="btn btn-success">OK</button>
+                </div>
+            </div>
+            <div class="modal-backdrop bg-black/30 backdrop-blur-sm"></div>
+        </dialog>
+    </div>
+}
+
+// HTMX Modal Error Template - Using Daisy UI modal component
+templ HTMXModalError(title string, message string) {
+    <div class="htmx-modal-wrapper" 
+         onclick="if(event.target === this) closeModal()"
+         hx-swap-oob="innerHTML:#htmx-modal-container">
+        <!-- Modal using Daisy UI -->
+        <dialog class="modal modal-open">
+            <div class="modal-box" onclick="event.stopPropagation()">
+                <!-- Header with error icon -->
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="alert alert-error">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-lg">{title}</h3>
+                </div>
+                
+                <!-- Message -->
+                <p class="py-4">{message}</p>
+                
+                <!-- Actions -->
+                <div class="modal-action">
+                    <button onclick="closeModal()" class="btn btn-error">Close</button>
+                </div>
+            </div>
+            <div class="modal-backdrop bg-black/30 backdrop-blur-sm"></div>
+        </dialog>
+    </div>
+}
+
+// HTMX Modal Error Template - Direct target version
+templ HTMXModalErrorDirect(title string, message string) {
+    <div class="htmx-modal-wrapper" 
+         onclick="if(event.target === this) closeModal()">
+        <!-- Modal using Daisy UI -->
+        <dialog class="modal modal-open">
+            <div class="modal-box" onclick="event.stopPropagation()">
+                <!-- Header with error icon -->
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="alert alert-error">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-lg">{title}</h3>
+                </div>
+                
+                <!-- Message -->
+                <p class="py-4">{message}</p>
+                
+                <!-- Actions -->
+                <div class="modal-action">
+                    <button onclick="closeModal()" class="btn btn-error">Close</button>
+                </div>
+            </div>
+            <div class="modal-backdrop bg-black/30 backdrop-blur-sm"></div>
+        </dialog>
+    </div>
+}
+
+// Notification components using Daisy UI alerts
+templ NotificationSuccess(message string) {
+    <div class="alert alert-success">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>{message}</span>
+    </div>
+}
+
+templ NotificationError(message string) {
+    <div class="alert alert-error">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>{message}</span>
+    </div>
+}
+
+// Card component using Daisy UI
+templ Card(title string) {
+    <div class="card bg-base-100 shadow-xl">
+        if title != "" {
+            <div class="card-title p-4 border-b">
+                {title}
+            </div>
+        }
+        <div class="card-body">
+            { children... }
+        </div>
+    </div>
+}
+
+// Stats component using Daisy UI
+templ Stats(title string, value string, desc string) {
+    <div class="stats shadow">
+        <div class="stat">
+            <div class="stat-title">{title}</div>
+            <div class="stat-value">{value}</div>
+            <div class="stat-desc">{desc}</div>
+        </div>
+    </div>
+}
+
+templ HTMXModalErrorNotAuthDirect(title string, message string) {
+    @HTMXModalErrorDirect(title, message)
+
+    // Auto redirect after 3 seconds
+    <script>
+        setTimeout(function() {
+            window.location.href = "/login";
+        }, 3000);
+    </script>
+}

@@ -1,0 +1,83 @@
+package components
+
+
+// ModalSize defines the size of the modal
+type ModalSize string
+
+const (
+    ModalSmall  ModalSize = "sm"
+    ModalMedium ModalSize = "md"
+    ModalLarge  ModalSize = "lg"
+)
+
+// ModalConfig holds configuration for the modal
+type ModalConfig struct {
+    Title       string
+    Size        ModalSize
+    ShowClose   bool
+    HideSubmit  bool
+    SubmitLabel string
+    FormId      string
+    FormAction  string
+    // Target element to be updated after form submission
+    Target      string
+}
+
+// Base Modal Form - Reusable for any form content
+templ BaseFormModal(config ModalConfig) {
+    <div class="modal modal-open">
+        <div class={"modal-box " + string(config.Size)} onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-lg">{config.Title}</h3>
+                if config.ShowClose {
+                    <button class="btn btn-sm btn-circle btn-ghost" onclick="closeModal()">✕</button>
+                }
+            </div>
+            
+            <!-- Form Content -->
+            <form id={config.FormId} 
+                hx-post={config.FormAction}
+                hx-target={config.Target}
+                hx-indicator="#htmx-loading"
+                class="space-y-4">
+                { children... }
+                
+                if !config.HideSubmit {
+                    <div class="modal-action">
+                        <button type="submit" class="btn btn-primary">{config.SubmitLabel}</button>
+                        <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+                    </div>
+                }
+            </form>
+        </div>
+        <div class="modal-backdrop" onclick="closeModal()"></div>
+    </div>
+}
+
+// Confirmation Modal - For delete/dangerous actions
+templ ConfirmationDeleteModal(title string, message string, confirmAction string, confirmLabel string) {
+    @BaseFormModal(ModalConfig{
+        Title: title,
+        Size: ModalSmall,
+        ShowClose: true,
+        HideSubmit: true,
+        FormId: "confirmation-edit-form",
+        Target: "#htmx-modal-container",
+    }) {
+        <div class="py-4">
+            <p class="text-lg">{message}</p>
+        </div>
+        <div class="modal-action">
+            <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+            <button type="button" 
+                    class="btn btn-error" 
+                    hx-delete={confirmAction}
+                    hx-target="#data-table-content"
+                    >
+                {confirmLabel}
+            </button>
+        </div>
+    }
+}
+

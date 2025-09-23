@@ -1,0 +1,157 @@
+package components 
+
+import "fmt"
+import "github.com/momokii/go-rab-maker/backend/models"
+
+// Generic Table component using Daisy UI with built-in search, pagination, and filtering
+templ DataTable(config models.TableConfig, paginationInfo models.PaginationInfo) {
+    <div class="w-full">
+        <div class="flex flex-col gap-4">
+            if config.Title != "" || config.SearchEnabled || config.PerPageEnabled {
+                <!-- Header with Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                    if config.Title != "" {
+                        <h1 class="text-2xl font-bold">{config.Title}</h1>
+                    }
+                    <div class="join">
+                        if config.PerPageEnabled {
+                            <div class="join-item">
+                                <select name="per_page" class="select select-bordered w-full max-w-xs" 
+                                        hx-get={config.BaseURL}
+                                        hx-trigger="change" 
+                                        hx-target="#data-table-content" 
+                                        hx-include="[name='search']">
+                                    <option value="5">5 per page</option>
+                                    <option value="10" selected>10 per page</option>
+                                    <option value="15">15 per page</option>
+                                    <option value="20">20 per page</option>
+                                </select>
+                            </div>
+                        }
+                        if config.SearchEnabled {
+                            <div class="join-item">
+                                <input type="text" 
+                                    name="search" 
+                                    placeholder="Search..." 
+                                    class="input input-bordered w-full"
+                                    hx-get={config.BaseURL}
+                                    hx-trigger="keyup changed delay:500ms, search"
+                                    hx-target="#data-table-content"
+                                    hx-include="[name='per_page']"
+                                />
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Table Container -->
+            <div class="overflow-x-auto bg-base-100 rounded-lg shadow">
+                    { children... }
+            </div>
+        </div>
+    </div>
+}
+
+// Table Content component - for the actual table structure
+templ TableContent() {
+    <table class="table table-zebra">
+        { children... }
+    </table>
+}
+
+// Table Header component
+templ TableHeader() {
+    <thead>
+        { children... }
+    </thead>
+}
+
+// Table Body component
+templ TableBody() {
+    <tbody>
+        { children... }
+    </tbody>
+}
+
+// Pagination component
+templ TablePagination(info models.PaginationInfo, baseURL string) {
+	<div class="flex justify-between items-center p-4">
+        <div class="text-sm text-base-content/70">
+        if info.TotalItems > 0 {
+            Showing
+            <span class="font-medium">{ (info.CurrentPage-1)*info.ItemsPerPage + 1 }</span> to
+            <span class="font-medium">{ min((info.CurrentPage)*info.ItemsPerPage, info.TotalItems) }</span> of
+            <span class="font-medium">{ info.TotalItems }</span> results
+        } else {
+            No results found
+        }
+
+        </div>
+		// ... Bagian "Showing results" ...
+
+		if info.TotalPages > 1 {
+			<div class="join">
+				<button
+					class="join-item btn"
+					disabled?={ info.CurrentPage == 1 }
+					hx-get={ baseURL + "?page=" + fmt.Sprint(info.CurrentPage-1) }
+					hx-target="#data-table-content"
+					hx-include="[name='search'], [name='per_page']"
+				>
+					«
+				</button>
+
+				<button
+					class={ templ.SafeClass("join-item btn " + ternary(1 == info.CurrentPage, "btn-active", "")) }
+					hx-get={ baseURL + "?page=1" }
+					hx-target="#data-table-content"
+					hx-include="[name='search'], [name='per_page']"
+				>
+					1
+				</button>
+
+				if info.CurrentPage > 3 {
+					<button class="join-item btn btn-disabled">...</button>
+				}
+
+				for i := info.CurrentPage - 1; i <= info.CurrentPage + 1; i++ {
+					// Hanya tampilkan jika nomor halaman valid DAN bukan halaman pertama/terakhir (karena sudah ditangani)
+					if i > 1 && i < info.TotalPages {
+						<button
+							class={ templ.SafeClass("join-item btn " + ternary(i == info.CurrentPage, "btn-active", "")) }
+							hx-get={ baseURL + "?page=" + fmt.Sprint(i) }
+							hx-target="#data-table-content"
+							hx-include="[name='search'], [name='per_page']"
+						>
+							{ fmt.Sprint(i) }
+						</button>
+					}
+				}
+
+				if info.CurrentPage < info.TotalPages - 2 {
+					<button class="join-item btn btn-disabled">...</button>
+				}
+
+				<button
+					class={ templ.SafeClass("join-item btn " + ternary(info.TotalPages == info.CurrentPage, "btn-active", "")) }
+					hx-get={ baseURL + "?page=" + fmt.Sprint(info.TotalPages) }
+					hx-target="#data-table-content"
+					hx-include="[name='search'], [name='per_page']"
+				>
+					{ fmt.Sprint(info.TotalPages) }
+				</button>
+
+				<button
+					class="join-item btn"
+					disabled?={ info.CurrentPage == info.TotalPages }
+					hx-get={ baseURL + "?page=" + fmt.Sprint(info.CurrentPage+1) }
+					hx-target="#data-table-content"
+					hx-include="[name='search'], [name='per_page']"
+				>
+					»
+				</button>
+			</div>
+		}
+	</div>
+}
