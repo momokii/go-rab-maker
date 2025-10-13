@@ -1,5 +1,8 @@
 package components
 
+import "fmt"
+import "github.com/momokii/go-rab-maker/backend/models"
+
 
 // ModalSize defines the size of the modal
 type ModalSize string
@@ -70,14 +73,130 @@ templ ConfirmationDeleteModal(title string, message string, confirmAction string
         </div>
         <div class="modal-action">
             <button type="button" class="btn" onclick="closeModal()">Cancel</button>
-            <button type="button" 
-                    class="btn btn-error" 
+            <button type="button"
+                    class="btn btn-error"
                     hx-delete={confirmAction}
-                    hx-target="#data-table-content"
+                    hx-target="body"
+                    hx-trigger="click"
                     >
                 {confirmLabel}
             </button>
         </div>
     }
+}
+
+// FormModal component for creating/editing forms
+templ FormModal(title string, actionURL string, formID string, submitText string) {
+    @BaseFormModal(ModalConfig{
+        Title: title,
+        Size: ModalMedium,
+        ShowClose: true,
+        FormId: formID,
+        FormAction: actionURL,
+        Target: "#htmx-modal-container",
+        SubmitLabel: submitText,
+    }) {
+        { children... }
+    }
+}
+
+// FormField component for individual form fields
+templ FormField(label string, name string, fieldType string, value string, placeholder string, required string) {
+    <div class="form-control w-full">
+        <label class="label">
+            <span class="label-text">{label}</span>
+        </label>
+        <input type={fieldType}
+               name={name}
+               value={value}
+               placeholder={placeholder}
+               class="input input-bordered w-full"
+               if required != "" { required }
+        />
+    </div>
+}
+
+// SearchComponent for table search
+templ SearchComponent(config models.TableConfig) {
+    <div class="form-control">
+        <input type="text"
+            name="search"
+            placeholder="Search..."
+            class="input input-bordered w-full"
+            hx-get={config.BaseURL}
+            hx-trigger="keyup changed delay:500ms, search"
+            hx-target="#data-table-content"
+            hx-include="[name='per_page']"
+        />
+    </div>
+}
+
+// PaginationPerPage for pagination controls
+templ PaginationPerPage(baseURL string, paginationInfo models.PaginationInfo) {
+    <select name="per_page" class="select select-bordered w-full max-w-xs"
+            hx-get={baseURL}
+            hx-trigger="change"
+            hx-target="#data-table-content"
+            hx-include="[name='search']">
+        <option value="5" selected?={paginationInfo.ItemsPerPage == 5}>5 per page</option>
+        <option value="10" selected?={paginationInfo.ItemsPerPage == 10}>10 per page</option>
+        <option value="15" selected?={paginationInfo.ItemsPerPage == 15}>15 per page</option>
+        <option value="20" selected?={paginationInfo.ItemsPerPage == 20}>20 per page</option>
+    </select>
+}
+
+// PaginationNavigation for pagination navigation
+templ PaginationNavigation(baseURL string, paginationInfo models.PaginationInfo) {
+    <div class="flex justify-between items-center p-4">
+        <div class="text-sm text-base-content/70">
+            if paginationInfo.TotalItems > 0 {
+                Showing
+                <span class="font-medium">{ (paginationInfo.CurrentPage-1)*paginationInfo.ItemsPerPage + 1 }</span> to
+                <span class="font-medium">{ min((paginationInfo.CurrentPage)*paginationInfo.ItemsPerPage, paginationInfo.TotalItems) }</span> of
+                <span class="font-medium">{ paginationInfo.TotalItems }</span> results
+            } else {
+                No results found
+            }
+        </div>
+        
+        if paginationInfo.TotalPages > 1 {
+            <div class="join">
+                <button
+                    class="join-item btn"
+                    disabled?={ paginationInfo.CurrentPage == 1 }
+                    hx-get={ baseURL + "?page=" + fmt.Sprint(paginationInfo.CurrentPage-1) }
+                    hx-target="#data-table-content"
+                    hx-include="[name='search'], [name='per_page']"
+                >
+                    «
+                </button>
+
+                for i := 1; i <= paginationInfo.TotalPages; i++ {
+                    if i == 1 || i == paginationInfo.TotalPages || (i >= paginationInfo.CurrentPage-1 && i <= paginationInfo.CurrentPage+1) {
+                        <button
+                            class={ templ.SafeClass("join-item btn " + ternary(i == paginationInfo.CurrentPage, "btn-active", "")) }
+                            hx-get={ baseURL + "?page=" + fmt.Sprint(i) }
+                            hx-target="#data-table-content"
+                            hx-include="[name='search'], [name='per_page']"
+                        >
+                            { fmt.Sprint(i) }
+                        </button>
+                    } else if i == paginationInfo.CurrentPage-2 || i == paginationInfo.CurrentPage+2 {
+                        <button class="join-item btn btn-disabled">...</button>
+                    }
+                }
+
+                <button
+                    class="join-item btn"
+                    disabled?={ paginationInfo.CurrentPage == paginationInfo.TotalPages }
+                    hx-get={ baseURL + "?page=" + fmt.Sprint(paginationInfo.CurrentPage+1) }
+                    hx-target="#data-table-content"
+                    hx-include="[name='search'], [name='per_page']"
+                >
+                    »
+                </button>
+            </div>
+        }
+    </div>
 }
 

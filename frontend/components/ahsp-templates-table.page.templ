@@ -1,0 +1,127 @@
+package components
+
+import (
+    "github.com/momokii/go-rab-maker/backend/models"
+    "strconv"
+)
+
+templ AhspTemplatesTablePage(ahspTemplates []models.AHSPTemplate, paginationInfo models.PaginationInfo, config models.TableConfig) {
+    <div id="data-table-content"
+         hx-trigger="refreshTable from:body"
+         hx-get="/ahsp_templates"
+         hx-target="this"
+         hx-include="[name='search'], [name='per_page']">
+        @TableContent() {
+            @TableHeader() {
+                <tr>
+                    <th>Template Name</th>
+                    <th>Unit</th>
+                    <th>Created At</th>
+                    <th>Updated At</th>
+                    <th>Actions</th>
+                </tr>
+            }
+
+            if len(ahspTemplates) > 0 {
+                @TableBody() {
+                    for _, ahspTemplate := range ahspTemplates {
+                        <tr class="hover">
+                            <td>{ahspTemplate.TemplateName}</td>
+                            <td>{ahspTemplate.Unit}</td>
+                            <td>{ahspTemplate.CreatedAt}</td>
+                            <td>{ahspTemplate.UpdatedAt}</td>
+                            <td>
+                                <div class="join">
+                                    <a href={templ.SafeURL("/ahsp_templates/" + strconv.Itoa(ahspTemplate.TemplateId))}
+                                        class="btn btn-ghost btn-sm join-item">
+                                        View Details
+                                    </a>
+                                    <button class="btn btn-ghost btn-sm join-item"
+                                        hx-get={"/ahsp_templates/" + strconv.Itoa(ahspTemplate.TemplateId) + "/edit"}
+                                        hx-target="#htmx-modal-container">
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-ghost btn-error btn-sm join-item"
+                                        hx-get={"/ahsp_templates/" + strconv.Itoa(ahspTemplate.TemplateId) + "/delete"}
+                                        hx-target="#htmx-modal-container">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+
+            if config.PaginationEnabled {
+                <!-- Pagination -->
+                @TablePagination(paginationInfo, config.BaseURL)
+            }
+        }
+    </div>
+}
+
+// AHSP Template Form Modal - Example implementation for create/edit
+templ AhspTemplatesFormModal(title, action, formId, submitLabel string, ahspTemplate models.AHSPTemplate) {
+    @BaseFormModal(ModalConfig{
+        Title: title,
+        Size: ModalMedium,
+        ShowClose: true,
+        FormId: formId,
+        FormAction: action,
+        Target: "#htmx-modal-container",
+        SubmitLabel: submitLabel,
+    }) {
+        <!-- Will using it when edit form used -->
+        <input type="hidden" name="ID" value={ahspTemplate.TemplateId} />
+
+        <!-- AHSP Template Form Fields -->
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Template Name</span>
+            </label>
+            <input type="text" 
+                   name="template_name" 
+                   value={ahspTemplate.TemplateName}
+                   class="input input-bordered w-full" 
+                   required
+            />
+        </div>
+
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Unit</span>
+            </label>
+            <input type="text"
+                   name="unit" 
+                   value={ahspTemplate.Unit}
+                   class="input input-bordered w-full" 
+                   required
+            />
+        </div>
+    }
+}
+
+templ AhspTemplatesPage(ahspTemplates []models.AHSPTemplate, paginationInfo models.PaginationInfo, config models.TableConfig) {
+    @BaseMainApp("AHSP Templates Table") {
+        <div class="w-full p-4">
+            <!-- Action Buttons -->
+            <div class="flex justify-end mb-4">
+                <button class="btn btn-primary"
+                        hx-get="/ahsp_templates/new"
+                        hx-target="#htmx-modal-container"
+                        hx-swap="innerHTML"
+                        >
+                    Add New AHSP Template
+                </button>
+            </div>
+
+            @DataTable(
+                config, 
+                paginationInfo,
+            ) {
+                @AhspTemplatesTablePage(ahspTemplates, paginationInfo, config)
+            }
+        </div>
+    }
+}

@@ -1,0 +1,139 @@
+package components
+
+import (
+    "github.com/momokii/go-rab-maker/backend/models"
+    "strconv"
+)
+
+templ MaterialsTablePage(materials []models.MasterMaterial, paginationInfo models.PaginationInfo, config models.TableConfig) {
+    <div id="data-table-content"
+         hx-trigger="refreshTable from:body"
+         hx-get="/materials"
+         hx-target="this"
+         hx-include="[name='search'], [name='per_page']">
+        @TableContent() {
+            @TableHeader() {
+                <tr>
+                    <th>Material Name</th>
+                    <th>Unit</th>
+                    <th>Default Unit Price</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            }
+
+            if len(materials) > 0 {
+                @TableBody() {
+                    for _, material := range materials {
+                        <tr class="hover">
+                            <td>{material.MaterialName}</td>
+                            <td>{material.Unit}</td>
+                            <td>{material.DefaultUnitPrice}</td>
+                            <td>{material.CreatedAt}</td>
+                            <td>
+                                <div class="join">
+                                    // <a href={templ.SafeURL("/materials/" + strconv.Itoa(material.MaterialId))} 
+                                    //     class="btn btn-ghost btn-sm join-item">
+                                    //     View
+                                    // </a>
+                                    <button class="btn btn-ghost btn-sm join-item"
+                                        hx-get={"/materials/" + strconv.Itoa(material.MaterialId) + "/edit"}
+                                        hx-target="#htmx-modal-container">
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-ghost btn-error btn-sm join-item"
+                                        hx-get={"/materials/" + strconv.Itoa(material.MaterialId) + "/delete"}
+                                        hx-target="#htmx-modal-container">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+
+            if config.PaginationEnabled {
+                <!-- Pagination -->
+                @TablePagination(paginationInfo, config.BaseURL)
+            }
+        }
+    </div>
+}
+
+// Country Form Modal - Example implementation for create/edit
+templ MaterialsFormModal(title, action, formId, submitLabel string, material models.MasterMaterial) {
+    @BaseFormModal(ModalConfig{
+        Title: title,
+        Size: ModalMedium,
+        ShowClose: true,
+        FormId: formId,
+        FormAction: action,
+        Target: "#htmx-modal-container",
+        SubmitLabel: submitLabel,
+    }) {
+        <!-- Will using it when edit form used -->
+        <input type="hidden" name="ID" value={material.MaterialId} />
+
+        <!-- Country Form Fields -->
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Material Name</span>
+            </label>
+            <input type="text" 
+                   name="material_name" 
+                   value={material.MaterialName}
+                   class="input input-bordered w-full" 
+                   required
+            />
+        </div>
+
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Unit</span>
+            </label>
+            <input type="text"
+                   name="material_unit"
+                   value={material.Unit}
+                   class="input input-bordered w-full"
+                   required
+            />
+        </div>
+
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Default Unit Price</span>
+            </label>
+            <input type="number" 
+                   name="material_defaultUnitPrice" 
+                   value={material.DefaultUnitPrice}
+                   class="input input-bordered w-full" 
+                   required
+            />
+        </div>
+    }
+}
+
+templ MaterialsPage(materials []models.MasterMaterial, paginationInfo models.PaginationInfo, config models.TableConfig) {
+    @BaseMainApp("Materials Table") {
+        <div class="w-full p-4">
+            <!-- Action Buttons -->
+            <div class="flex justify-end mb-4">
+                <button class="btn btn-primary"
+                        hx-get="/materials/new"
+                        hx-target="#htmx-modal-container"
+                        hx-swap="innerHTML"
+                        >
+                    Add New Materials
+                </button>
+            </div>
+
+            @DataTable(
+                config, 
+                paginationInfo,
+            ) {
+                @MaterialsTablePage(materials, paginationInfo, config)
+            }
+        </div>
+    }
+}

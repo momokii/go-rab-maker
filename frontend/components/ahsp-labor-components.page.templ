@@ -1,0 +1,130 @@
+package components
+
+import (
+    "github.com/momokii/go-rab-maker/backend/models"
+    "strconv"
+    "fmt"
+)
+
+templ AhspLaborComponentsTablePage(laborComponents []models.AHSPLaborComponentWithLabor, templateId int) {
+    <div class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+            <thead>
+                <tr>
+                    <th>Labor Type Name</th>
+                    <th>Coefficient</th>
+                    <th>Unit</th>
+                    <th>Unit Price</th>
+                    <th>Subtotal (per unit)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                if len(laborComponents) > 0 {
+                    for _, component := range laborComponents {
+                        <tr>
+                            <td>{component.LaborTypeName}</td>
+                            <td>{component.Coefficient}</td>
+                            <td>{component.LaborUnit}</td>
+                            <td>{fmt.Sprintf("%.2f", component.LaborWage)}</td>
+                            <td>{fmt.Sprintf("%.2f", component.LaborWage * component.Coefficient)}</td>
+                            <td>
+                                <div class="join">
+                                    <button class="btn btn-ghost btn-sm join-item"
+                                        hx-get={"/ahsp_templates/" + strconv.Itoa(templateId) + "/labor_components/" + strconv.Itoa(component.ComponentId) + "/edit"}
+                                        hx-target="#htmx-modal-container">
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-ghost btn-error btn-sm join-item"
+                                        hx-get={"/ahsp_templates/" + strconv.Itoa(templateId) + "/labor_components/" + strconv.Itoa(component.ComponentId) + "/delete"}
+                                        hx-target="#htmx-modal-container">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                } else {
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No labor components found</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+templ AhspLaborComponentFormModal(title, action, formId, submitLabel string, component models.AHSPLaborComponent, template models.AHSPTemplate, laborTypes []models.MasterLaborType) {
+    @BaseFormModal(ModalConfig{
+        Title: title,
+        Size: ModalMedium,
+        ShowClose: true,
+        FormId: formId,
+        FormAction: action,
+        Target: "#htmx-modal-container",
+        SubmitLabel: submitLabel,
+    }) {
+        <!-- Template Info -->
+        <div class="alert alert-info mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>Template: {template.TemplateName} ({template.Unit})</span>
+        </div>
+        
+        <!-- Hidden fields -->
+        <input type="hidden" name="template_id" value={strconv.Itoa(template.TemplateId)} />
+        if component.ComponentId > 0 {
+            <input type="hidden" name="component_id" value={strconv.Itoa(component.ComponentId)} />
+        }
+
+        <!-- Labor Type Selection -->
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Labor Type</span>
+            </label>
+            <select name="labor_type_id" class="select select-bordered w-full" required>
+                <option value="">Select a labor type</option>
+                for _, laborType := range laborTypes {
+                    <option value={strconv.Itoa(laborType.LaborTypeId)}
+                            selected={component.LaborTypeId == laborType.LaborTypeId}>
+                        {laborType.RoleName} ({laborType.Unit}) - {fmt.Sprintf("%.2f", laborType.DefaultDailyWage)}
+                    </option>
+                }
+            </select>
+        </div>
+
+        <!-- Coefficient -->
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Coefficient</span>
+                <span class="label-text-alt">Amount needed per {template.Unit}</span>
+            </label>
+            <input type="number" 
+                   name="coefficient" 
+                   value={fmt.Sprintf("%.4f", component.Coefficient)}
+                   step="0.0001"
+                   min="0.0001"
+                   class="input input-bordered w-full" 
+                   required
+            />
+            <label class="label">
+                <span class="label-text-alt">Enter the amount of labor needed per unit of template work</span>
+            </label>
+        </div>
+    }
+}
+
+templ AhspLaborComponentsTabContent(template models.AHSPTemplate, laborComponents []models.AHSPLaborComponentWithLabor, availableLaborTypes []models.MasterLaborType) {
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">Labor Components</h3>
+        <button class="btn btn-primary btn-sm"
+                hx-get={"/ahsp_templates/" + strconv.Itoa(template.TemplateId) + "/labor_components/new"}
+                hx-target="#htmx-modal-container"
+                hx-swap="innerHTML">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Add Labor
+        </button>
+    </div>
+    @AhspLaborComponentsTablePage(laborComponents, template.TemplateId)
+}

@@ -1,0 +1,282 @@
+package components
+
+import (
+    "github.com/momokii/go-rab-maker/backend/models"
+    "strconv"
+    "fmt"
+)
+
+templ AhspMaterialComponentsTablePage(materialComponents []models.AHSPMaterialComponentWithMaterial, templateId int) {
+    <div class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+            <thead>
+                <tr>
+                    <th>Material Name</th>
+                    <th>Coefficient</th>
+                    <th>Unit</th>
+                    <th>Unit Price</th>
+                    <th>Subtotal (per unit)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                if len(materialComponents) > 0 {
+                    for _, component := range materialComponents {
+                        <tr>
+                            <td>{component.MaterialName}</td>
+                            <td>{component.Coefficient}</td>
+                            <td>{component.MaterialUnit}</td>
+                            <td>{fmt.Sprintf("%.2f", component.MaterialPrice)}</td>
+                            <td>{fmt.Sprintf("%.2f", component.MaterialPrice * component.Coefficient)}</td>
+                            <td>
+                                <div class="join">
+                                    <button class="btn btn-ghost btn-sm join-item"
+                                        hx-get={"/ahsp_templates/" + strconv.Itoa(templateId) + "/material_components/" + strconv.Itoa(component.ComponentId) + "/edit"}
+                                        hx-target="#htmx-modal-container">
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-ghost btn-error btn-sm join-item"
+                                        hx-get={"/ahsp_templates/" + strconv.Itoa(templateId) + "/material_components/" + strconv.Itoa(component.ComponentId) + "/delete"}
+                                        hx-target="#htmx-modal-container">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                } else {
+                    <tr>
+                        <td colspan="6" class="text-center py-4">No material components found</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+templ AhspMaterialComponentFormModal(title, action, formId, submitLabel string, component models.AHSPMaterialComponent, template models.AHSPTemplate, materials []models.MasterMaterial) {
+    @BaseFormModal(ModalConfig{
+        Title: title,
+        Size: ModalMedium,
+        ShowClose: true,
+        FormId: formId,
+        FormAction: action,
+        Target: "#htmx-modal-container",
+        SubmitLabel: submitLabel,
+    }) {
+        <!-- Template Info -->
+        <div class="alert alert-info mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>Template: {template.TemplateName} ({template.Unit})</span>
+        </div>
+        
+        <!-- Hidden fields -->
+        <input type="hidden" name="template_id" value={strconv.Itoa(template.TemplateId)} />
+        if component.ComponentId > 0 {
+            <input type="hidden" name="component_id" value={strconv.Itoa(component.ComponentId)} />
+        }
+
+        <!-- Material Selection -->
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Material</span>
+            </label>
+            <select name="material_id" class="select select-bordered w-full" required>
+                <option value="">Select a material</option>
+                for _, material := range materials {
+                    <option value={strconv.Itoa(material.MaterialId)} 
+                            selected={component.MaterialId == material.MaterialId}>
+                        {material.MaterialName} ({material.Unit}) - {fmt.Sprintf("%.2f", material.DefaultUnitPrice)}
+                    </option>
+                }
+            </select>
+        </div>
+
+        <!-- Coefficient -->
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Coefficient</span>
+                <span class="label-text-alt">Amount needed per {template.Unit}</span>
+            </label>
+            <input type="number" 
+                   name="coefficient" 
+                   value={fmt.Sprintf("%.4f", component.Coefficient)}
+                   step="0.0001"
+                   min="0.0001"
+                   class="input input-bordered w-full" 
+                   required
+            />
+            <label class="label">
+                <span class="label-text-alt">Enter the amount of material needed per unit of template work</span>
+            </label>
+        </div>
+    }
+}
+
+templ AhspMaterialComponentsTabContent(template models.AHSPTemplate, materialComponents []models.AHSPMaterialComponentWithMaterial) {
+    <div id="tab-content-wrapper" class="pt-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Materials Components</h3>
+            <button class="btn btn-primary btn-sm"
+                    hx-get={"/ahsp_templates/" + strconv.Itoa(template.TemplateId) + "/material_components/new"}
+                    hx-target="#htmx-modal-container"
+                    hx-swap="innerHTML">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Add Components
+            </button>
+        </div>
+        if len(materialComponents) > 0 {
+            @AhspMaterialComponentsTablePage(materialComponents, template.TemplateId) 
+        } else {
+            <div class="text-center py-4">No material components found</div>
+        }
+    </div>
+}
+
+templ AhspMaterialComponentsPage(template models.AHSPTemplate, materialComponents []models.AHSPMaterialComponentWithMaterial, availableMaterials []models.MasterMaterial, laborComponents []models.AHSPLaborComponentWithLabor) {
+    @BaseMainApp("AHSP Template: " + template.TemplateName) {
+        <div class="w-full p-4">
+            <div class="card bg-base-100 shadow-lg mb-6">
+                <div class="card-body">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="card-title">{template.TemplateName}</h2> 
+                            <p class="text-base-content/70">Unit: {template.Unit}</p>
+                            <p class="text-base-content/70">Created: {template.CreatedAt}</p> 
+                        </div>
+                        <div class="join">
+                            <a href="/ahsp_templates" class="btn btn-ghost"> 
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /> 
+                                </svg>
+                                Back to Templates
+                            </a>
+                            // <button class="btn btn-primary"
+                            //         hx-get={"/ahsp_templates/" + strconv.Itoa(template.TemplateId) + "/material_components/new"}
+                            //         hx-target="#htmx-modal-container"
+                            //         hx-swap="innerHTML">
+                            //     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                            //         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            //     </svg>
+                            //     Add Material Component
+                            // </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-lg">
+                <div class="card-body">
+                    <div role="tablist" class="tabs tabs-bordered">
+                        <button role="tab"
+                                class="tab tab-active"
+                                hx-get={"/ahsp_templates/" + strconv.Itoa(template.TemplateId)}
+                                hx-target="#tab-content-wrapper"
+                                hx-swap="innerHTML">
+                            Materials
+                        </button>
+
+                        <button role="tab"
+                                class="tab"
+                                hx-get={"/ahsp_templates/" + strconv.Itoa(template.TemplateId) + "/labor_components"}
+                                hx-target="#tab-content-wrapper"
+                                hx-swap="innerHTML">
+                            Labor
+                        </button>
+                    </div>
+
+                    @AhspMaterialComponentsTabContent(template, materialComponents)
+
+                    // <div id="tab-content-wrapper" class="pt-4">
+                    //     if len(materialComponents) > 0 {
+                    //         @AhspMaterialComponentsTablePage(materialComponents, template.TemplateId) 
+                    //     } else {
+                    //         <div class="text-center py-4">No material components found</div>
+                    //     }
+                    // </div>
+                </div>
+            </div>
+            
+            if len(materialComponents) > 0 || len(laborComponents) > 0 {
+                <div class="card bg-base-100 shadow-lg mt-6">
+                    <div class="card-body">
+                        <h3 class="card-title mb-4">Cost Summary</h3>
+                        <div class="overflow-x-auto">
+                            <table class="table table-zebra w-full">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th> 
+                                        <th>Unit</th> 
+                                        <th>Coefficient</th>
+                                        <th>Type</th> 
+                                        <th>Unit Price | Labor Wage</th> 
+                                        <th>Total per {template.Unit}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    for _, component := range materialComponents {
+                                        <tr>
+                                            <td>{component.MaterialName}</td> 
+                                            <td>{component.MaterialUnit}</td> 
+                                            <td>{component.Coefficient}</td>
+                                            <td>Material</td> 
+                                            <td>{fmt.Sprintf("%.2f", component.MaterialPrice)}</td> 
+                                            <td class="font-semibold">{fmt.Sprintf("%.2f", component.MaterialPrice * component.Coefficient)}</td> 
+                                        </tr>
+                                    }
+                                    for _, component := range laborComponents {
+                                        <tr>
+                                            <td>{component.LaborTypeName}</td> 
+                                            <td>{component.LaborUnit}</td> 
+                                            <td>{component.Coefficient}</td>
+                                            <td>Labor</td> 
+                                            <td>{fmt.Sprintf("%.2f", component.LaborWage)}</td> 
+                                            <td class="font-semibold">{fmt.Sprintf("%.2f", component.LaborWage * component.Coefficient)}</td> 
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="4">Total Cost per {template.Unit}</th> 
+                                        <th class="text-primary">
+                                            {fmt.Sprintf("%.2f", calculateTotalCost(materialComponents, laborComponents))}
+                                        </th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <script>
+            document.body.addEventListener('htmx:beforeRequest', function(evt) {
+                // Cari semua tombol tab
+                const tabs = document.querySelectorAll('.tabs .tab');
+                // Hapus kelas 'tab-active' dari semua tombol
+                tabs.forEach(tab => tab.classList.remove('tab-active'));
+                
+                // Tambahkan 'tab-active' ke tombol yang memicu request
+                const trigger = evt.detail.elt;
+                if (trigger.classList.contains('tab')) {
+                    trigger.classList.add('tab-active');
+                }
+            });
+        </script>
+    }
+}
+
+// Helper function to calculate total cost (this would typically be in a utils package)
+func calculateTotalCost(components []models.AHSPMaterialComponentWithMaterial, laborComponents []models.AHSPLaborComponentWithLabor) float64 {
+    total := 0.0
+    for _, component := range components {
+        total += component.MaterialPrice * component.Coefficient
+    }
+    for _, labor := range laborComponents {
+        total += labor.LaborWage * labor.Coefficient
+    }
+    return total
+}

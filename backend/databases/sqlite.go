@@ -43,11 +43,11 @@ type SQLiteServices interface {
 type SQLiteDB struct {
 	DatabasesPath string
 	read          *sql.DB
-	write         *sql.DB
+	Write         *sql.DB // Exported field for access
 }
 
 func runMigrations(db *SQLiteDB) error {
-	// Tambahkan fungsi debug untuk melihat struktur embed files
+	// debug function to list the files
 	log.Println("Listing embedded files:")
 	fs.WalkDir(migrationsFS, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -128,7 +128,7 @@ func NewSQLiteDatabases(databasesPath string) (SQLiteServices, error) {
 	return &SQLiteDB{
 		DatabasesPath: databasesPath,
 		read:          read,
-		write:         write,
+		Write:         write,
 	}, nil
 }
 
@@ -181,7 +181,7 @@ func (s *SQLiteDB) Transaction(ctx context.Context, fn func(tx *sql.Tx) (statusC
 	// defer conn.Close()
 
 	// tx, err := conn.BeginTx(ctx, nil)
-	tx, err := s.write.BeginTx(ctx, nil)
+	tx, err := s.Write.BeginTx(ctx, nil)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}

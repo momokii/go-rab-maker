@@ -39,3 +39,13 @@ func ResponseRedirectHTMX(c *fiber.Ctx, url string, status int) error {
 	c.Set("HX-Redirect", url)
 	return c.SendStatus(status)
 }
+
+func ResponseSuccessWithRedirect(c *fiber.Ctx, title, message, redirectUrl string) error {
+	// Show success modal first
+	successComponentModal := components.HTMXModalSuccess(title, message)
+
+	// Set redirect to happen after modal is shown
+	c.Set("HX-Redirect", redirectUrl)
+
+	return adaptor.HTTPHandler(templ.Handler(successComponentModal))(c)
+}

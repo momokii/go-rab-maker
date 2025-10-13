@@ -1,0 +1,141 @@
+package components
+
+import (
+    "github.com/momokii/go-rab-maker/backend/models"
+    "strconv"
+)
+
+templ LaborTypesTablePage(laborTypes []models.MasterLaborType, paginationInfo models.PaginationInfo, config models.TableConfig) {
+    <div id="data-table-content"
+         hx-trigger="refreshTable from:body"
+         hx-get="/labor_types"
+         hx-target="this"
+         hx-include="[name='search'], [name='per_page']">
+        @TableContent() {
+            @TableHeader() {
+                <tr>
+                    <th>Role Name</th>
+                    <th>Unit</th>
+                    <th>Default Daily Wage</th>
+                    <th>Created Att</th>
+                    <th>Updated At</th>
+                    <th>Actions</th>
+                </tr>
+            }
+
+            if len(laborTypes) > 0 {
+                @TableBody() {
+                    for _, laborType := range laborTypes {
+                        <tr class="hover">
+                            <td>{laborType.RoleName}</td>
+                            <td>{laborType.Unit}</td>
+                            <td>{laborType.DefaultDailyWage}</td>
+                            <td>{laborType.CreatedAt}</td>
+                            <td>{laborType.UpdatedAt}</td>
+                            <td>
+                                <div class="join">
+                                    // <a href={templ.SafeURL("/labor_types/" + strconv.Itoa(laborType.LaborTypeId))} 
+                                    //     class="btn btn-ghost btn-sm join-item">
+                                    //     View
+                                    // </a>
+                                    <button class="btn btn-ghost btn-sm join-item"
+                                        hx-get={"/labor_types/" + strconv.Itoa(laborType.LaborTypeId) + "/edit"}
+                                        hx-target="#htmx-modal-container">
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-ghost btn-error btn-sm join-item"
+                                        hx-get={"/labor_types/" + strconv.Itoa(laborType.LaborTypeId) + "/delete"}
+                                        hx-target="#htmx-modal-container">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+
+            if config.PaginationEnabled {
+                <!-- Pagination -->
+                @TablePagination(paginationInfo, config.BaseURL)
+            }
+        }
+    </div>
+}
+
+// Labor Type Form Modal - Example implementation for create/edit
+templ LaborTypesFormModal(title, action, formId, submitLabel string, laborType models.MasterLaborType) {
+    @BaseFormModal(ModalConfig{
+        Title: title,
+        Size: ModalMedium,
+        ShowClose: true,
+        FormId: formId,
+        FormAction: action,
+        Target: "#htmx-modal-container",
+        SubmitLabel: submitLabel,
+    }) {
+        <!-- Will using it when edit form used -->
+        <input type="hidden" name="ID" value={laborType.LaborTypeId} />
+
+        <!-- Labor Type Form Fields -->
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Role Name</span>
+            </label>
+            <input type="text" 
+                   name="role_name" 
+                   value={laborType.RoleName}
+                   class="input input-bordered w-full" 
+                   required
+            />
+        </div>
+
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Unit</span>
+            </label>
+            <input type="text"
+                   name="unit" 
+                   value={laborType.Unit}
+                   class="input input-bordered w-full" 
+                   required
+            />
+        </div>
+
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Default Daily Wage</span>
+            </label>
+            <input type="number" 
+                   name="default_daily_wage" 
+                   value={laborType.DefaultDailyWage}
+                   class="input input-bordered w-full" 
+                   required
+            />
+        </div>
+    }
+}
+
+templ LaborTypesPage(laborTypes []models.MasterLaborType, paginationInfo models.PaginationInfo, config models.TableConfig) {
+    @BaseMainApp("Labor Types Table") {
+        <div class="w-full p-4">
+            <!-- Action Buttons -->
+            <div class="flex justify-end mb-4">
+                <button class="btn btn-primary"
+                        hx-get="/labor_types/new"
+                        hx-target="#htmx-modal-container"
+                        hx-swap="innerHTML"
+                        >
+                    Add New Labor Type
+                </button>
+            </div>
+
+            @DataTable(
+                config, 
+                paginationInfo,
+            ) {
+                @LaborTypesTablePage(laborTypes, paginationInfo, config)
+            }
+        </div>
+    }
+}

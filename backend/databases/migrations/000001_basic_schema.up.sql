@@ -5,7 +5,7 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
+    password TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -133,3 +133,7 @@ CREATE INDEX idx_pwi_project_id ON project_work_items(project_id);
 CREATE INDEX idx_pic_work_item_id ON project_item_costs(work_item_id);
 CREATE INDEX idx_ahsp_mat_template_id ON ahsp_material_components(template_id);
 CREATE INDEX idx_ahsp_lab_template_id ON ahsp_labor_components(template_id);
+
+-- Insert default admin user (password: admin123)
+-- Note: In production, this should be changed or created through a proper setup process
+INSERT OR IGNORE INTO users (username, password) VALUES ('admin', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');

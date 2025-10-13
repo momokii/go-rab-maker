@@ -1,0 +1,128 @@
+package components
+
+import (
+    "github.com/momokii/go-rab-maker/backend/models"
+    "strconv"
+)
+
+templ WorkCategoriesTablePage(workCategories []models.MasterWorkCategory, paginationInfo models.PaginationInfo, config models.TableConfig) {
+    <div id="data-table-content"
+         hx-trigger="refreshTable from:body"
+         hx-get="/work_categories"
+         hx-target="this"
+         hx-include="[name='search'], [name='per_page']">
+        @TableContent() {
+            @TableHeader() {
+                <tr>
+                    <th>Category Name</th>
+                    <th>Display Order</th>
+                    <th>Created At</th>
+                    <th>Updated At</th>
+                    <th>Actions</th>
+                </tr>
+            }
+
+            if len(workCategories) > 0 {
+                @TableBody() {
+                    for _, workCategory := range workCategories {
+                        <tr class="hover">
+                            <td>{workCategory.CategoryName}</td>
+                            <td>{workCategory.DisplayOrder}</td>
+                            <td>{workCategory.CreatedAt}</td>
+                            <td>{workCategory.UpdatedAt}</td>
+
+                            <td>
+                                <div class="join">
+                                    // <a href={templ.SafeURL("/work_categories/" + strconv.Itoa(workCategory.CategoryId))} 
+                                    //     class="btn btn-ghost btn-sm join-item">
+                                    //     View
+                                    // </a>
+                                    <button class="btn btn-ghost btn-sm join-item"
+                                        hx-get={"/work_categories/" + strconv.Itoa(workCategory.CategoryId) + "/edit"}
+                                        hx-target="#htmx-modal-container">
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-ghost btn-error btn-sm join-item"
+                                        hx-get={"/work_categories/" + strconv.Itoa(workCategory.CategoryId) + "/delete"}
+                                        hx-target="#htmx-modal-container">
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+
+            if config.PaginationEnabled {
+                <!-- Pagination -->
+                @TablePagination(paginationInfo, config.BaseURL)
+            }
+        }
+    </div>
+}
+
+// Work Category Form Modal - Example implementation for create/edit
+templ WorkCategoriesFormModal(title, action, formId, submitLabel string, workCategory models.MasterWorkCategory) {
+    @BaseFormModal(ModalConfig{
+        Title: title,
+        Size: ModalMedium,
+        ShowClose: true,
+        FormId: formId,
+        FormAction: action,
+        Target: "#htmx-modal-container",
+        SubmitLabel: submitLabel,
+    }) {
+        <!-- Will using it when edit form used -->
+        <input type="hidden" name="ID" value={workCategory.CategoryId} />
+
+        <!-- Work Category Form Fields -->
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Category Name</span>
+            </label>
+            <input type="text" 
+                   name="category_name" 
+                   value={workCategory.CategoryName}
+                   class="input input-bordered w-full" 
+                   required
+            />
+        </div>
+
+        <div class="form-control w-full">
+            <label class="label">
+                <span class="label-text">Display Order</span>
+            </label>
+            <input type="number"
+                   name="display_order" 
+                   value={workCategory.DisplayOrder}
+                   class="input input-bordered w-full" 
+                   required
+            />
+        </div>
+    }
+}
+
+templ WorkCategoriesPage(workCategories []models.MasterWorkCategory, paginationInfo models.PaginationInfo, config models.TableConfig) {
+    @BaseMainApp("Work Categories Table") {
+        <div class="w-full p-4">
+            <!-- Action Buttons -->
+            <div class="flex justify-end mb-4">
+                <button class="btn btn-primary"
+                        hx-get="/work_categories/new"
+                        hx-target="#htmx-modal-container"
+                        hx-swap="innerHTML"
+                        >
+                    Add New Work Category
+                </button>
+            </div>
+
+            @DataTable(
+                config, 
+                paginationInfo,
+            ) {
+                @WorkCategoriesTablePage(workCategories, paginationInfo, config)
+            }
+        </div>
+    }
+}

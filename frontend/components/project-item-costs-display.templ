@@ -1,0 +1,72 @@
+package components
+
+import (
+	"fmt"
+	"github.com/momokii/go-rab-maker/backend/models"
+)
+
+templ ProjectItemCostsDisplay(costs []models.ProjectItemCostWithDetails) {
+	<div class="card">
+		<div class="card-header">
+			<h5 class="mb-0">Cost Breakdown</h5>
+		</div>
+		<div class="card-body">
+			if len(costs) == 0 {
+				<div class="alert alert-info">
+					No cost details available for this work item.
+				</div>
+			} else {
+				<div class="table-responsive">
+					<table class="table table-sm table-striped">
+						<thead>
+							<tr>
+								<th>Item Type</th>
+								<th>Item Name</th>
+								<th>Coefficient</th>
+								<th>Quantity Needed</th>
+								<th>Unit</th>
+								<th>Unit Price</th>
+								<th>Total Cost</th>
+							</tr>
+						</thead>
+						<tbody>
+							for _, cost := range costs {
+								<tr>
+									<td>
+										if cost.ItemType == "MATERIAL" {
+											<span class="badge bg-primary">Material</span>
+										} else if cost.ItemType == "LABOR" {
+											<span class="badge bg-success">Labor</span>
+										} else {
+											<span class="badge bg-secondary">{ cost.ItemType }</span>
+										}
+									</td>
+									<td>{ cost.ItemName }</td>
+									<td>{ cost.Coefficient }</td>
+									<td>{ cost.QuantityNeeded }</td>
+									<td>{ cost.Unit }</td>
+									<td class="text-end">Rp { fmt.Sprintf("%.2f", cost.UnitPriceAtCreation) }</td>
+									<td class="text-end fw-bold">Rp { fmt.Sprintf("%.2f", cost.TotalCost) }</td>
+								</tr>
+							}
+						</tbody>
+						<tfoot>
+							<tr class="table-active">
+								<th colspan="6" class="text-end">Total Cost:</th>
+								<th class="text-end">Rp { fmt.Sprintf("%.2f", calculateItemCostsTotal(costs)) }</th>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+			}
+		</div>
+	</div>
+}
+
+func calculateItemCostsTotal(costs []models.ProjectItemCostWithDetails) float64 {
+	total := 0.0
+	for _, cost := range costs {
+		total += cost.TotalCost
+	}
+	return total
+}

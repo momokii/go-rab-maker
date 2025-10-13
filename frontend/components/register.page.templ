@@ -1,0 +1,98 @@
+package components
+
+templ RegisterPage() {
+    @Base("Register") {
+        // Latar belakang menggunakan warna tema dari DaisyUI
+        <div class="min-h-screen flex items-center justify-center bg-base-200">
+            
+            // Menggunakan komponen 'card' dari DaisyUI
+            <div class="card w-full max-w-md bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <div class="text-center mb-6">
+                        <h2 class="mt-4 text-3xl font-bold card-title justify-center">Create Account</h2>
+                        <p class="text-base-content text-opacity-70">Sign up to get started with RAB Maker</p>
+                    </div>
+
+                    <form 
+                        method="post"
+                        hx-post="/register"
+                        hx-target="body"
+                        hx-swap="none"
+                        hx-indicator="#htmx-loading"
+                        class="space-y-4"
+                    >
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Username</span>
+                            </label>
+                            <input 
+                                id="username" 
+                                name="username" 
+                                type="text" 
+                                required 
+                                class="input input-bordered w-full"
+                                placeholder="Choose a username"
+                                minlength="3"
+                                maxlength="50"
+                            />
+                            <label class="label">
+                                <span class="label-text-alt">Must be 3-50 characters long</span>
+                            </label>
+                        </div>
+
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Password</span>
+                            </label>
+                            <input 
+                                id="password" 
+                                name="password" 
+                                type="password" 
+                                required 
+                                class="input input-bordered w-full"
+                                placeholder="Enter your password"
+                                minlength="6"
+                            />
+                            <label class="label">
+                                <span class="label-text-alt">Must be at least 6 characters long</span>
+                            </label>
+                        </div>
+
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">Confirm Password</span>
+                            </label>
+                            <input 
+                                id="confirm_password" 
+                                name="confirm_password" 
+                                type="password" 
+                                required 
+                                class="input input-bordered w-full"
+                                placeholder="Confirm your password"
+                                minlength="6"
+                            />
+                        </div>
+
+                        <div class="form-control mt-8">
+                            <button 
+                                type="submit" 
+                                class="btn btn-primary w-full"
+                            >
+                                Create Account
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="divider">OR</div>
+
+                    <div class="text-center">
+                        <p class="text-sm text-base-content text-opacity-70">
+                            Already have an account? 
+                            <a href="/login" class="link link-primary">Sign in</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
