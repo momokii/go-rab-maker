@@ -204,7 +204,7 @@ func ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWit
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, " required></div><div class=\"mb-4\"><label class=\"block text-gray-700 text-sm font-bold mb-2\" for=\"ahsp_template_id\">AHSP Template (Optional)</label> <select id=\"ahsp_template_id\" name=\"ahsp_template_id\" class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"><option value=\"\">No template (manual cost entry)</option> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, " required></div><div class=\"mb-4\"><label class=\"block text-gray-700 text-sm font-bold mb-2\" for=\"ahsp_template_id\">AHSP Template (Optional)</label> <select id=\"ahsp_template_id\" name=\"ahsp_template_id\" hx-on--change=\"toggleManualCostFields(this.value)\" class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"><option value=\"\">No template (manual cost entry)</option> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -216,7 +216,7 @@ func ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWit
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(template.TemplateId)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 102, Col: 43}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 103, Col: 43}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -239,7 +239,7 @@ func ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWit
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(template.TemplateName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 102, Col: 184}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 103, Col: 184}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -250,58 +250,68 @@ func ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWit
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</select></div><input type=\"hidden\" name=\"project_id\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</select></div><!-- Manual Cost Entry Section -->")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if workItem != nil && workItem.AHSPTemplateId == nil {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<div id=\"manual-cost-section\" class=\"mb-4 border rounded p-4 bg-gray-50\"><h4 class=\"text-md font-semibold mb-3 text-gray-800\">Manual Cost Entry</h4><div class=\"mb-3\"><label class=\"block text-gray-700 text-sm font-bold mb-2\">Material Costs</label><div id=\"manual-materials\" class=\"space-y-2\"><div class=\"manual-material-row flex gap-2\"><input type=\"text\" name=\"manual_material_name[]\" placeholder=\"Material name\" class=\"flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_material_quantity[]\" placeholder=\"Qty\" step=\"0.01\" class=\"w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"text\" name=\"manual_material_unit[]\" placeholder=\"Unit\" class=\"w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_material_price[]\" placeholder=\"Price\" step=\"0.01\" class=\"w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <button type=\"button\" onclick=\"addManualMaterialRow()\" class=\"bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline\">+</button></div></div></div><div class=\"mb-3\"><label class=\"block text-gray-700 text-sm font-bold mb-2\">Labor Costs</label><div id=\"manual-labor\" class=\"space-y-2\"><div class=\"manual-labor-row flex gap-2\"><input type=\"text\" name=\"manual_labor_name[]\" placeholder=\"Labor type\" class=\"flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_labor_quantity[]\" placeholder=\"Qty\" step=\"0.01\" class=\"w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"text\" name=\"manual_labor_unit[]\" placeholder=\"Unit\" class=\"w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_labor_price[]\" placeholder=\"Price\" step=\"0.01\" class=\"w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <button type=\"button\" onclick=\"addManualLaborRow()\" class=\"bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline\">+</button></div></div></div></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "<input type=\"hidden\" name=\"project_id\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(projectId)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 107, Col: 61}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 159, Col: 61}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\"> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\"> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if isEdit {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "<input type=\"hidden\" name=\"work_item_id\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "<input type=\"hidden\" name=\"work_item_id\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(workItem.WorkItemId)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 109, Col: 74}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 161, Col: 74}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "<div class=\"flex justify-end space-x-2\"><button type=\"button\" onclick=\"document.getElementById('project-work-item-modal').remove()\" class=\"bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\">Cancel</button> <button type=\"submit\" class=\"bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "<div class=\"flex justify-end space-x-2\"><button type=\"button\" onclick=\"document.getElementById('project-work-item-modal').remove()\" class=\"bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\">Cancel</button> <button type=\"submit\" class=\"bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if isEdit {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "Update")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "Update")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "Add")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "Add")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</button></div></form></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "</button></div></form></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

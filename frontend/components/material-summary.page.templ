@@ -133,24 +133,24 @@ templ MaterialSummaryPage(materials []models.MaterialSummary) {
 								</tr>
 							</thead>
 							<tbody class="bg-white divide-y divide-gray-200">
-								// for _, material := range materials {
-								// 	if material.TotalQuantity > 0 { // Only show materials with quantity > 0
-								// 		<tr class="hover:bg-gray-50 transition-colors">
-								// 			<td class="px-6 py-4 whitespace-nowrap">
-								// 				<div class="text-sm font-medium text-gray-900">{ material.ItemName }</div>
-								// 			</td>
-								// 			<td class="px-6 py-4 whitespace-nowrap">
-								// 				<div class="text-sm text-gray-900">{ fmt.Sprintf("%.2f", material.TotalQuantity) }</div>
-								// 			</td>
-								// 			<td class="px-6 py-4 whitespace-nowrap">
-								// 				<div class="text-sm text-gray-500">{ material.Unit }</div>
-								// 			</td>
-								// 			<td class="px-6 py-4 whitespace-nowrap">
-								// 				<div class="text-sm font-medium text-gray-900">Rp { fmt.Sprintf("%.0f", material.TotalCost) }</div>
-								// 			</td>
-								// 		</tr>
-								// 	}
-								// }
+								for _, material := range materials {
+									// if material.TotalQuantity > 0 { 
+										<tr class="hover:bg-gray-50 transition-colors">
+											<td class="px-6 py-4 whitespace-nowrap">
+												<div class="text-sm font-medium text-gray-900">{ material.ItemName }</div>
+											</td>
+											<td class="px-6 py-4 whitespace-nowrap">
+												<div class="text-sm text-gray-900">{ fmt.Sprintf("%.2f", material.TotalQuantity) }</div>
+											</td>
+											<td class="px-6 py-4 whitespace-nowrap">
+												<div class="text-sm text-gray-500">{ material.Unit }</div>
+											</td>
+											<td class="px-6 py-4 whitespace-nowrap">
+												<div class="text-sm font-medium text-gray-900">Rp { fmt.Sprintf("%.0f", material.TotalCost) }</div>
+											</td>
+										</tr>
+									// }
+								}
 							</tbody>
 						</table>
 					</div>

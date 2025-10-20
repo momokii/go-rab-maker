@@ -138,8 +138,8 @@ func (r *ProjectWorkItemRepo) FindByProjectIdWithDetails(tx *sql.Tx, projectId i
 	return workItems, nil
 }
 
-// Create inserts a new project work item
-func (r *ProjectWorkItemRepo) Create(tx *sql.Tx, workItem models.ProjectWorkItemCreate) error {
+// Create inserts a new project work item and returns the ID
+func (r *ProjectWorkItemRepo) Create(tx *sql.Tx, workItem models.ProjectWorkItemCreate) (int, error) {
 	query := `
 		INSERT INTO project_work_items
 		(project_id, category_id, description, volume, unit, ahsp_template_id, created_at, updated_at)
@@ -147,7 +147,7 @@ func (r *ProjectWorkItemRepo) Create(tx *sql.Tx, workItem models.ProjectWorkItem
 	`
 
 	now := time.Now().Format("2006-01-02 15:04:05")
-	_, err := tx.Exec(
+	result, err := tx.Exec(
 		query,
 		workItem.ProjectId,
 		workItem.CategoryId,
@@ -159,7 +159,17 @@ func (r *ProjectWorkItemRepo) Create(tx *sql.Tx, workItem models.ProjectWorkItem
 		now,
 	)
 
-	return err
+	if err != nil {
+		return 0, err
+	}
+
+	// Get the ID of the newly inserted work item
+	workItemId, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(workItemId), nil
 }
 
 // Update updates an existing project work item

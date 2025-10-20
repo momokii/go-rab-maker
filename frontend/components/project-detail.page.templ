@@ -95,8 +95,8 @@ templ ProjectDetailPage(project models.Project, workItems []models.ProjectWorkIt
 												hx-target={fmt.Sprintf("#costs-content-%d", workItem.WorkItemId)}
 												hx-trigger="click"
 												hx-swap="innerHTML"
-												class="text-gray-600 hover:text-gray-800"
-												hx-on--click={fmt.Sprintf("toggleCosts(%d)", workItem.WorkItemId)}>
+												hx-on--before-request={fmt.Sprintf("document.getElementById('costs-%d').classList.remove('hidden')", workItem.WorkItemId)}
+												class="text-gray-600 hover:text-gray-800">
 												Show Costs
 											</button>
 										</div>
@@ -160,8 +160,13 @@ templ ProjectDetailPage(project models.Project, workItems []models.ProjectWorkIt
 					}
 				}
 
-				// Add click handlers to tab buttons
+				// Add click handlers to tab buttons (only for non-HTMX tabs)
 				tabButtons.forEach(button => {
+					// Skip if button has HTMX attributes
+					if (button.hasAttribute('hx-get')) {
+						return;
+					}
+					
 					button.addEventListener('click', function(e) {
 						e.preventDefault();
 						const targetTab = this.getAttribute('data-tab');
@@ -181,17 +186,6 @@ templ ProjectDetailPage(project models.Project, workItems []models.ProjectWorkIt
 				switchTab('boq');
 			});
 			
-			// Function to toggle costs display
-			function toggleCosts(workItemId) {
-				const costsDiv = document.getElementById('costs-' + workItemId);
-				if (costsDiv) {
-					if (costsDiv.classList.contains('hidden')) {
-						costsDiv.classList.remove('hidden');
-					} else {
-						costsDiv.classList.add('hidden');
-					}
-				}
-			}
 		</script>
 	}
 }

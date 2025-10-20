@@ -12,26 +12,30 @@ import (
 	"github.com/momokii/go-rab-maker/backend/middlewares"
 	"github.com/momokii/go-rab-maker/backend/models"
 	"github.com/momokii/go-rab-maker/backend/repository/material_summary"
+	"github.com/momokii/go-rab-maker/backend/repository/project_item_costs"
 	"github.com/momokii/go-rab-maker/backend/repository/projects"
 	"github.com/momokii/go-rab-maker/backend/utils"
 	"github.com/momokii/go-rab-maker/frontend/components"
 )
 
 type MaterialSummaryHandler struct {
-	dbService           databases.SQLiteServices
-	materialSummaryRepo material_summary.MaterialSummaryRepo
-	projectsRepo        projects.ProjectsRepo
+	dbService            databases.SQLiteServices
+	materialSummaryRepo  material_summary.MaterialSummaryRepo
+	projectsRepo         projects.ProjectsRepo
+	projectItemCostsRepo *project_item_costs.ProjectItemCostsRepo
 }
 
 func NewMaterialSummaryHandler(
 	dbService databases.SQLiteServices,
 	materialSummaryRepo material_summary.MaterialSummaryRepo,
 	projectsRepo projects.ProjectsRepo,
+	projectItemCostsRepo *project_item_costs.ProjectItemCostsRepo,
 ) *MaterialSummaryHandler {
 	return &MaterialSummaryHandler{
-		dbService:           dbService,
-		materialSummaryRepo: materialSummaryRepo,
-		projectsRepo:        projectsRepo,
+		dbService:            dbService,
+		materialSummaryRepo:  materialSummaryRepo,
+		projectsRepo:         projectsRepo,
+		projectItemCostsRepo: projectItemCostsRepo,
 	}
 }
 
@@ -149,13 +153,30 @@ func (h *MaterialSummaryHandler) ProjectMaterialSummary(c *fiber.Ctx) error {
 			return fiber.StatusForbidden, fiber.NewError(fiber.StatusForbidden, "Access denied")
 		}
 
-		// Get material summary data for the specific project
-		materialSummariesData, err := h.materialSummaryRepo.GetProjectMaterialSummary(tx, projectId)
+		// Get detailed material summary data for the specific project
+		detailedSummaries, err := h.projectItemCostsRepo.GetDetailedMaterialSummaryByProjectId(tx, projectId)
 		if err != nil {
-			log.Printf("Error fetching project material summary: %v", err)
-			materialSummaries = []models.MaterialSummary{}
+			log.Printf("Error fetching detailed project material summary: %v", err)
+			// Fallback to regular summary if detailed fails
+			materialSummariesData, err := h.materialSummaryRepo.GetProjectMaterialSummary(tx, projectId)
+			if err != nil {
+				log.Printf("Error fetching project material summary: %v", err)
+				materialSummaries = []models.MaterialSummary{}
+			} else {
+				materialSummaries = materialSummariesData
+			}
 		} else {
-			materialSummaries = materialSummariesData
+			// Convert detailed summaries to regular summaries for compatibility
+			for _, detailed := range detailedSummaries {
+				materialSummaries = append(materialSummaries, models.MaterialSummary{
+					ItemId:        detailed.ItemId,
+					ItemName:      detailed.ItemName,
+					TotalQuantity: detailed.TotalQuantity,
+					Unit:          detailed.Unit,
+					ItemType:      detailed.ItemType,
+					TotalCost:     detailed.TotalCost,
+				})
+			}
 		}
 
 		project = projectData

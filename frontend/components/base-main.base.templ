@@ -157,6 +157,62 @@ templ Base(title string) {
                         modalContainer.innerHTML = '';
                     }
                 }
+
+                // Manual cost entry functions
+                function toggleManualCostFields(templateId) {
+                    const manualCostSection = document.getElementById('manual-cost-section');
+                    if (templateId === '') {
+                        manualCostSection.style.display = 'block';
+                    } else {
+                        manualCostSection.style.display = 'none';
+                    }
+                }
+
+                function addManualMaterialRow() {
+                    const container = document.getElementById('manual-materials');
+                    const newRow = document.createElement('div');
+                    newRow.className = 'manual-material-row flex gap-2';
+                    newRow.innerHTML = `
+                        <input type="text" name="manual_material_name[]" placeholder="Material name"
+                               class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="number" name="manual_material_quantity[]" placeholder="Qty" step="0.01"
+                               class="w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="text" name="manual_material_unit[]" placeholder="Unit"
+                               class="w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="number" name="manual_material_price[]" placeholder="Price" step="0.01"
+                               class="w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <button type="button" onclick="removeManualRow(this)"
+                                class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline">
+                            -
+                        </button>
+                    `;
+                    container.appendChild(newRow);
+                }
+
+                function addManualLaborRow() {
+                    const container = document.getElementById('manual-labor');
+                    const newRow = document.createElement('div');
+                    newRow.className = 'manual-labor-row flex gap-2';
+                    newRow.innerHTML = `
+                        <input type="text" name="manual_labor_name[]" placeholder="Labor type"
+                               class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="number" name="manual_labor_quantity[]" placeholder="Qty" step="0.01"
+                               class="w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="text" name="manual_labor_unit[]" placeholder="Unit"
+                               class="w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="number" name="manual_labor_price[]" placeholder="Price" step="0.01"
+                               class="w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <button type="button" onclick="removeManualRow(this)"
+                                class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline">
+                            -
+                        </button>
+                    `;
+                    container.appendChild(newRow);
+                }
+
+                function removeManualRow(button) {
+                    button.parentElement.remove();
+                }
             </script>
             
         </body>

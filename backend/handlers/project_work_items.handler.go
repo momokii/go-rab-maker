@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/a-h/templ"
@@ -490,34 +491,29 @@ func (h *ProjectWorkItemsHandler) CreateProjectWorkItem(c *fiber.Ctx) error {
 			return fiber.StatusForbidden, fiber.NewError(fiber.StatusForbidden, "Access denied")
 		}
 
-		// Create work item
-		if err := h.projectWorkItemsRepo.Create(tx, workItemData); err != nil {
+		// Create work item and get the ID
+		newWorkItemId, err := h.projectWorkItemsRepo.Create(tx, workItemData)
+		if err != nil {
 			log.Printf("Error creating work item: %v", err)
 			return fiber.StatusInternalServerError, err
 		}
 
-		// Get the newly created work items to find the latest one
-		workItems, err := h.projectWorkItemsRepo.FindByProjectId(tx, projectId)
-		if err != nil {
-			log.Printf("Error fetching work items after creation: %v", err)
-			return fiber.StatusInternalServerError, err
-		}
-
-		// Find the most recent work item (the one we just created)
-		var newWorkItemId int
-		if len(workItems) > 0 {
-			// Sort by work item ID descending to get the latest
-			if workItems[0].WorkItemId > 0 {
-				newWorkItemId = workItems[0].WorkItemId
-			}
-		}
+		log.Printf("Successfully created work item with ID %d", newWorkItemId)
 
 		// If AHSP template is selected, calculate and create cost items
-		if ahspTemplateId != nil && newWorkItemId > 0 {
+		if ahspTemplateId != nil {
 			log.Printf("Calculating costs for template ID %d, work item ID %d", *ahspTemplateId, newWorkItemId)
 			if err := h.calculateAndCreateCosts(tx, *ahspTemplateId, volume, newWorkItemId); err != nil {
 				log.Printf("Error calculating costs: %v", err)
 				// Don't fail the entire operation if cost calculation fails
+				// Just log the error and continue
+			}
+		} else {
+			// Handle manual cost entry
+			log.Printf("Processing manual cost entry for work item ID %d", newWorkItemId)
+			if err := h.processManualCostEntry(tx, c, newWorkItemId, volume); err != nil {
+				log.Printf("Error processing manual cost entry: %v", err)
+				// Don't fail the entire operation if manual cost entry fails
 				// Just log the error and continue
 			}
 		}
@@ -652,6 +648,14 @@ func (h *ProjectWorkItemsHandler) UpdateProjectWorkItem(c *fiber.Ctx) error {
 				// Don't fail the entire operation if cost calculation fails
 				// Just log the error and continue
 			}
+		} else {
+			// Handle manual cost entry for updates
+			log.Printf("Processing manual cost entry for updated work item ID %d", workItemId)
+			if err := h.processManualCostEntry(tx, c, workItemId, volume); err != nil {
+				log.Printf("Error processing manual cost entry: %v", err)
+				// Don't fail the entire operation if manual cost entry fails
+				// Just log the error and continue
+			}
 		}
 
 		return fiber.StatusOK, nil
@@ -714,10 +718,19 @@ func (h *ProjectWorkItemsHandler) DeleteProjectWorkItem(c *fiber.Ctx) error {
 			return fiber.StatusForbidden, fiber.NewError(fiber.StatusForbidden, "Access denied")
 		}
 
-		// Delete work item (cascade will handle cost calculations)
-		if err := h.projectWorkItemsRepo.Delete(tx, existingWorkItem); err != nil {
+		// First, explicitly delete all associated cost calculations
+		if err := h.projectItemCostsRepo.DeleteByWorkItemId(tx, workItemId); err != nil {
+			log.Printf("Error deleting cost items for work item %d: %v", workItemId, err)
 			return fiber.StatusInternalServerError, err
 		}
+
+		// Then delete the work item
+		if err := h.projectWorkItemsRepo.Delete(tx, existingWorkItem); err != nil {
+			log.Printf("Error deleting work item %d: %v", workItemId, err)
+			return fiber.StatusInternalServerError, err
+		}
+
+		log.Printf("Successfully deleted work item %d and its cost calculations", workItemId)
 
 		return fiber.StatusOK, nil
 	}); err != nil {
@@ -770,7 +783,9 @@ func (h *ProjectWorkItemsHandler) calculateAndCreateCosts(tx *sql.Tx, templateId
 		costItems = append(costItems, models.ProjectItemCostCreate{
 			WorkItemId:          workItemId,
 			ItemType:            string(models.PROJECT_ITEM_TYPE_MATERIAL),
-			ItemId:              component.MaterialId,
+			MasterItemId:        component.MaterialId,
+			ItemName:            material.MaterialName,
+			Coefficient:         component.Coefficient,
 			QuantityNeeded:      quantityNeeded,
 			UnitPriceAtCreation: material.DefaultUnitPrice,
 			TotalCost:           totalCost,
@@ -797,7 +812,9 @@ func (h *ProjectWorkItemsHandler) calculateAndCreateCosts(tx *sql.Tx, templateId
 		costItems = append(costItems, models.ProjectItemCostCreate{
 			WorkItemId:          workItemId,
 			ItemType:            string(models.PROJECT_ITEM_TYPE_LABOR),
-			ItemId:              component.LaborTypeId,
+			MasterItemId:        component.LaborTypeId,
+			ItemName:            laborType.RoleName,
+			Coefficient:         component.Coefficient,
 			QuantityNeeded:      quantityNeeded,
 			UnitPriceAtCreation: laborType.DefaultDailyWage,
 			TotalCost:           totalCost,
@@ -814,6 +831,101 @@ func (h *ProjectWorkItemsHandler) calculateAndCreateCosts(tx *sql.Tx, templateId
 		log.Printf("Successfully created %d cost items", len(costItems))
 	} else {
 		log.Printf("No cost items to create for work item %d", workItemId)
+	}
+
+	return nil
+}
+
+// processManualCostEntry processes manual cost entry from form data
+func (h *ProjectWorkItemsHandler) processManualCostEntry(tx *sql.Tx, c *fiber.Ctx, workItemId int, volume float64) error {
+	// Get manual material costs
+	materialNames := strings.Split(c.FormValue("manual_material_name[]"), ",")
+	materialQuantities := strings.Split(c.FormValue("manual_material_quantity[]"), ",")
+	materialPrices := strings.Split(c.FormValue("manual_material_price[]"), ",")
+
+	// Get manual labor costs
+	laborNames := strings.Split(c.FormValue("manual_labor_name[]"), ",")
+	laborQuantities := strings.Split(c.FormValue("manual_labor_quantity[]"), ",")
+	laborPrices := strings.Split(c.FormValue("manual_labor_price[]"), ",")
+
+	var costItems []models.ProjectItemCostCreate
+
+	// Process material costs
+	for i := 0; i < len(materialNames); i++ {
+		if materialNames[i] == "" {
+			continue // Skip empty rows
+		}
+
+		quantity, err := strconv.ParseFloat(materialQuantities[i], 64)
+		if err != nil || quantity <= 0 {
+			continue // Skip invalid quantities
+		}
+
+		price, err := strconv.ParseFloat(materialPrices[i], 64)
+		if err != nil || price <= 0 {
+			continue // Skip invalid prices
+		}
+
+		totalCost := quantity * price
+
+		costItems = append(costItems, models.ProjectItemCostCreate{
+			WorkItemId:          workItemId,
+			ItemType:            string(models.PROJECT_ITEM_TYPE_MATERIAL),
+			MasterItemId:        0, // Manual entry doesn't have a master item ID
+			ItemName:            materialNames[i],
+			Coefficient:         quantity / volume, // Calculate coefficient based on volume
+			QuantityNeeded:      quantity,
+			UnitPriceAtCreation: price,
+			TotalCost:           totalCost,
+		})
+
+		log.Printf("Added manual material: %s, Qty: %.2f, Price: %.2f, Total: %.2f",
+			materialNames[i], quantity, price, totalCost)
+	}
+
+	// Process labor costs
+	for i := 0; i < len(laborNames); i++ {
+		if laborNames[i] == "" {
+			continue // Skip empty rows
+		}
+
+		quantity, err := strconv.ParseFloat(laborQuantities[i], 64)
+		if err != nil || quantity <= 0 {
+			continue // Skip invalid quantities
+		}
+
+		price, err := strconv.ParseFloat(laborPrices[i], 64)
+		if err != nil || price <= 0 {
+			continue // Skip invalid prices
+		}
+
+		totalCost := quantity * price
+
+		costItems = append(costItems, models.ProjectItemCostCreate{
+			WorkItemId:          workItemId,
+			ItemType:            string(models.PROJECT_ITEM_TYPE_LABOR),
+			MasterItemId:        0, // Manual entry doesn't have a master item ID
+			ItemName:            laborNames[i],
+			Coefficient:         quantity / volume, // Calculate coefficient based on volume
+			QuantityNeeded:      quantity,
+			UnitPriceAtCreation: price,
+			TotalCost:           totalCost,
+		})
+
+		log.Printf("Added manual labor: %s, Qty: %.2f, Price: %.2f, Total: %.2f",
+			laborNames[i], quantity, price, totalCost)
+	}
+
+	// Create all cost items
+	if len(costItems) > 0 {
+		log.Printf("Creating %d manual cost items for work item %d", len(costItems), workItemId)
+		if err := h.projectItemCostsRepo.CreateMultiple(tx, costItems); err != nil {
+			log.Printf("Error creating manual cost items: %v", err)
+			return err
+		}
+		log.Printf("Successfully created %d manual cost items", len(costItems))
+	} else {
+		log.Printf("No manual cost items to create for work item %d", workItemId)
 	}
 
 	return nil

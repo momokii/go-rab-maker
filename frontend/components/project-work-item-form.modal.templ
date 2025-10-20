@@ -93,9 +93,10 @@ templ ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWi
 						<label class="block text-gray-700 text-sm font-bold mb-2" for="ahsp_template_id">
 							AHSP Template (Optional)
 						</label>
-						<select 
-							id="ahsp_template_id" 
-							name="ahsp_template_id" 
+						<select
+							id="ahsp_template_id"
+							name="ahsp_template_id"
+							hx-on--change="toggleManualCostFields(this.value)"
 							class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
 							<option value="">No template (manual cost entry)</option>
 							for _, template := range templates {
@@ -103,6 +104,57 @@ templ ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWi
 							}
 						</select>
 					</div>
+
+					<!-- Manual Cost Entry Section -->
+					if workItem != nil && workItem.AHSPTemplateId == nil {
+						<div id="manual-cost-section" class="mb-4 border rounded p-4 bg-gray-50">
+							<h4 class="text-md font-semibold mb-3 text-gray-800">Manual Cost Entry</h4>
+							
+							<div class="mb-3">
+								<label class="block text-gray-700 text-sm font-bold mb-2">
+									Material Costs
+								</label>
+								<div id="manual-materials" class="space-y-2">
+									<div class="manual-material-row flex gap-2">
+										<input type="text" name="manual_material_name[]" placeholder="Material name"
+											class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+										<input type="number" name="manual_material_quantity[]" placeholder="Qty" step="0.01"
+											class="w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+										<input type="text" name="manual_material_unit[]" placeholder="Unit"
+											class="w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+										<input type="number" name="manual_material_price[]" placeholder="Price" step="0.01"
+											class="w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+										<button type="button" onclick="addManualMaterialRow()"
+												class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline">
+											+
+										</button>
+									</div>
+								</div>
+							</div>
+							
+							<div class="mb-3">
+								<label class="block text-gray-700 text-sm font-bold mb-2">
+									Labor Costs
+								</label>
+								<div id="manual-labor" class="space-y-2">
+									<div class="manual-labor-row flex gap-2">
+										<input type="text" name="manual_labor_name[]" placeholder="Labor type"
+											class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+										<input type="number" name="manual_labor_quantity[]" placeholder="Qty" step="0.01"
+											class="w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+										<input type="text" name="manual_labor_unit[]" placeholder="Unit"
+											class="w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+										<input type="number" name="manual_labor_price[]" placeholder="Price" step="0.01"
+											class="w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+										<button type="button" onclick="addManualLaborRow()"
+												class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline">
+											+
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					}
 
 					<input type="hidden" name="project_id" value={ projectId }>
 					if isEdit {

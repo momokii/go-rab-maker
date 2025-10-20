@@ -153,15 +153,6 @@ templ AhspMaterialComponentsPage(template models.AHSPTemplate, materialComponent
                                 </svg>
                                 Back to Templates
                             </a>
-                            // <button class="btn btn-primary"
-                            //         hx-get={"/ahsp_templates/" + strconv.Itoa(template.TemplateId) + "/material_components/new"}
-                            //         hx-target="#htmx-modal-container"
-                            //         hx-swap="innerHTML">
-                            //     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                            //         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            //     </svg>
-                            //     Add Material Component
-                            // </button>
                         </div>
                     </div>
                 </div>
@@ -188,14 +179,6 @@ templ AhspMaterialComponentsPage(template models.AHSPTemplate, materialComponent
                     </div>
 
                     @AhspMaterialComponentsTabContent(template, materialComponents)
-
-                    // <div id="tab-content-wrapper" class="pt-4">
-                    //     if len(materialComponents) > 0 {
-                    //         @AhspMaterialComponentsTablePage(materialComponents, template.TemplateId) 
-                    //     } else {
-                    //         <div class="text-center py-4">No material components found</div>
-                    //     }
-                    // </div>
                 </div>
             </div>
             
@@ -239,7 +222,7 @@ templ AhspMaterialComponentsPage(template models.AHSPTemplate, materialComponent
                                 </tbody>
                                 <tfoot>
                                     <tr>
-                                        <th colspan="4">Total Cost per {template.Unit}</th> 
+                                        <th colspan="5">Total Cost per {template.Unit}</th> 
                                         <th class="text-primary">
                                             {fmt.Sprintf("%.2f", calculateTotalCost(materialComponents, laborComponents))}
                                         </th>

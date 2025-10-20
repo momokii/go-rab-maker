@@ -165,9 +165,9 @@ func (r *ProjectItemCostsRepo) Create(tx *sql.Tx, cost models.ProjectItemCostCre
 		query,
 		cost.WorkItemId,
 		cost.ItemType,
-		cost.ItemId,
-		"", // item_name will be filled in the service layer
-		0,  // coefficient will be filled in the service layer
+		cost.MasterItemId,
+		cost.ItemName,
+		cost.Coefficient,
 		cost.QuantityNeeded,
 		cost.UnitPriceAtCreation,
 		cost.TotalCost,
@@ -198,9 +198,9 @@ func (r *ProjectItemCostsRepo) CreateMultiple(tx *sql.Tx, costs []models.Project
 			query,
 			cost.WorkItemId,
 			cost.ItemType,
-			cost.ItemId,
-			"", // item_name will be filled in the service layer
-			0,  // coefficient will be filled in the service layer
+			cost.MasterItemId,
+			cost.ItemName,
+			cost.Coefficient,
 			cost.QuantityNeeded,
 			cost.UnitPriceAtCreation,
 			cost.TotalCost,
@@ -269,4 +269,103 @@ func (r *ProjectItemCostsRepo) GetMaterialSummaryByProjectId(tx *sql.Tx, project
 	}
 
 	return summary, nil
+}
+
+// GetDetailedMaterialSummaryByProjectId retrieves a detailed summary with work item breakdown
+func (r *ProjectItemCostsRepo) GetDetailedMaterialSummaryByProjectId(tx *sql.Tx, projectId int) ([]models.DetailedMaterialSummary, error) {
+	// First get all unique items for the project
+	query := `
+		SELECT DISTINCT
+			pic.master_item_id, pic.item_name,
+			CASE
+				WHEN pic.item_type = 'MATERIAL' THEN mm.unit
+				WHEN pic.item_type = 'LABOR' THEN mlt.unit
+				ELSE ''
+			END as unit,
+			pic.item_type,
+			SUM(pic.total_cost) as total_cost,
+			SUM(pic.quantity_needed) as total_quantity
+		FROM project_item_costs pic
+		JOIN project_work_items pwi ON pic.work_item_id = pwi.work_item_id
+		LEFT JOIN master_materials mm ON pic.item_type = 'MATERIAL' AND pic.master_item_id = mm.material_id
+		LEFT JOIN master_labor_types mlt ON pic.item_type = 'LABOR' AND pic.master_item_id = mlt.labor_type_id
+		WHERE pwi.project_id = ?
+		GROUP BY pic.master_item_id, pic.item_name, unit, pic.item_type
+		ORDER BY pic.item_type, pic.item_name
+	`
+
+	rows, err := tx.Query(query, projectId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var detailedSummary []models.DetailedMaterialSummary
+	for rows.Next() {
+		var item models.DetailedMaterialSummary
+		err := rows.Scan(
+			&item.ItemId,
+			&item.ItemName,
+			&item.Unit,
+			&item.ItemType,
+			&item.TotalCost,
+			&item.TotalQuantity,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Get work item breakdown for this item
+		workItemBreakdown, err := r.getWorkItemBreakdownForItem(tx, projectId, item.ItemId, item.ItemType)
+		if err != nil {
+			return nil, err
+		}
+		item.WorkItemBreakdown = workItemBreakdown
+
+		detailedSummary = append(detailedSummary, item)
+	}
+
+	return detailedSummary, nil
+}
+
+// getWorkItemBreakdownForItem gets the breakdown of a specific item across work items
+func (r *ProjectItemCostsRepo) getWorkItemBreakdownForItem(tx *sql.Tx, projectId, itemId int, itemType string) ([]models.WorkItemBreakdown, error) {
+	query := `
+		SELECT
+			pic.work_item_id,
+			pwi.description,
+			pic.quantity_needed,
+			pic.total_cost,
+			pwi.volume,
+			pic.coefficient
+		FROM project_item_costs pic
+		JOIN project_work_items pwi ON pic.work_item_id = pwi.work_item_id
+		WHERE pwi.project_id = ? AND pic.master_item_id = ? AND pic.item_type = ?
+		ORDER BY pwi.created_at
+	`
+
+	rows, err := tx.Query(query, projectId, itemId, itemType)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var breakdown []models.WorkItemBreakdown
+	for rows.Next() {
+		var item models.WorkItemBreakdown
+		err := rows.Scan(
+			&item.WorkItemId,
+			&item.WorkItemDesc,
+			&item.Quantity,
+			&item.Cost,
+			&item.Volume,
+			&item.Coefficient,
+		)
+		if err != nil {
+			return nil, err
+		}
+		breakdown = append(breakdown, item)
+	}
+
+	return breakdown, nil
 }
