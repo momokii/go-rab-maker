@@ -47,7 +47,7 @@ templ SideBar() {
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
 						</svg>
 					</div>
-					<span class="text-xl font-bold tracking-wide">Admin</span>
+					<span class="text-xl font-bold tracking-wide">RAB Maker</span>
 				</div>
 				<label for="main-drawer" class="btn btn-circle btn-ghost btn-sm text-primary-content hover:bg-primary-focus lg:hidden">
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -104,19 +104,20 @@ templ SideBar() {
 				</ul>
 			</div>
 
-			<div class="p-4 border-t border-base-200">
-				<div class="flex items-center gap-3 p-3 rounded-xl hover:bg-base-200 transition-all duration-200 cursor-pointer">
-					<div class="avatar placeholder">
-						<div class="bg-primary text-primary-content rounded-full w-10">
-							<span class="text-lg font-medium">A</span>
-						</div>
-					</div>
-					<div class="flex-1 min-w-0">
-						<p class="font-medium text-base truncate">Admin User</p>
-						<p class="text-sm opacity-70 truncate">admin@example.com</p>
-					</div>
-				</div>
-			</div>
+			// <div class="p-4 border-t border-base-200">
+			// 	<div class="flex items-center gap-3 p-3 rounded-xl hover:bg-base-200 transition-all duration-200 cursor-pointer">
+			// 		<div class="avatar placeholder">
+			// 			<div class="bg-primary text-primary-content rounded-full w-10">
+			// 				<span class="text-lg font-medium">A</span>
+			// 			</div>
+			// 		</div>
+			// 		<div class="flex-1 min-w-0">
+			// 			<p class="font-medium text-base truncate">Admin User</p>
+			// 			<p class="text-sm opacity-70 truncate">admin@example.com</p>
+			// 		</div>
+			// 	</div>
+			// </div>
+
 		</div>
 	</div>
 }
@@ -237,26 +238,21 @@ templ MainContentApp(title string) {
                 </div>
                 <div class="navbar-end">
                     <div class="flex gap-2">
-                        <button class="btn btn-ghost btn-circle">
-                            <div class="indicator">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4 19h5c.552 0 1-.448 1-1v-5c0-.552-.448-1-1-1H4c-.552 0-1 .448-1 1v5c0 .552.448 1 1 1z"></path>
-                                </svg>
-                                <span class="badge badge-xs badge-primary indicator-item">3</span>
-                            </div>
-                        </button>
-                        <div class="dropdown dropdown-end">
-                            <div tabindex="0" class="btn btn-ghost btn-circle">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                                </svg>
-                            </div>
-                            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                                <li><button onclick="document.documentElement.setAttribute('data-theme', 'light')" class="active:bg-primary/20">Light mode</button></li>
-                                <li><button onclick="document.documentElement.setAttribute('data-theme', 'dark')" class="active:bg-primary/20">Dark mode</button></li>
-                                <li><button onclick="document.documentElement.setAttribute('data-theme', 'emerald')" class="active:bg-primary/20">Default theme</button></li>
-                            </ul>
-                        </div>
+
+                        // dark mode toggle
+                        // <div class="dropdown dropdown-end">
+                        //     <div tabindex="0" class="btn btn-ghost btn-circle">
+                        //         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        //             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        //         </svg>
+                        //     </div>
+                        //     <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                        //         <li><button onclick="document.documentElement.setAttribute('data-theme', 'light')" class="active:bg-primary/20">Light mode</button></li>
+                        //         <li><button onclick="document.documentElement.setAttribute('data-theme', 'dark')" class="active:bg-primary/20">Dark mode</button></li>
+                        //         <li><button onclick="document.documentElement.setAttribute('data-theme', 'emerald')" class="active:bg-primary/20">Default theme</button></li>
+                        //     </ul>
+                        // </div>
+
                     </div>
                 </div>
             </div>
@@ -271,7 +267,7 @@ templ MainContentApp(title string) {
             <!-- Footer -->
             <footer class="footer footer-center p-4 bg-base-300 text-base-content">
                 <aside>
-                    <p>&copy; 2024 Admin Panel. All rights reserved.</p>
+                    <p>&copy; 2025 RAB Maker. All rights reserved.</p>
                 </aside>
             </footer>
         </div>

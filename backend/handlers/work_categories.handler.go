@@ -11,7 +11,7 @@ import (
 	"github.com/momokii/go-rab-maker/backend/databases"
 	"github.com/momokii/go-rab-maker/backend/middlewares"
 	"github.com/momokii/go-rab-maker/backend/models"
-	master_work_categories "github.com/momokii/go-rab-maker/backend/repository/masater_work_categories"
+	master_work_categories "github.com/momokii/go-rab-maker/backend/repository/master_work_categories"
 	"github.com/momokii/go-rab-maker/backend/utils"
 	"github.com/momokii/go-rab-maker/frontend/components"
 )

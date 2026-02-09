@@ -2,6 +2,7 @@ package master_work_categories
 
 import (
 	"database/sql"
+	"fmt"
 	"math"
 
 	"github.com/momokii/go-rab-maker/backend/models"
@@ -13,7 +14,6 @@ func NewMasterWorkCategoriesRepo() *MasterWorkCategoriesRepo {
 	return &MasterWorkCategoriesRepo{}
 }
 
-// TODO: Testing FindById [MasterWorkCategoriesRepo]
 func (r *MasterWorkCategoriesRepo) FindById(tx *sql.Tx, masterWorkCategoryId int) (models.MasterWorkCategory, error) {
 
 	var workCategory models.MasterWorkCategory
@@ -37,7 +37,6 @@ func (r *MasterWorkCategoriesRepo) FindById(tx *sql.Tx, masterWorkCategoryId int
 	return workCategory, nil
 }
 
-// TODO: Testing Find [MasterWorkCategoriesRepo]
 func (r *MasterWorkCategoriesRepo) Find(tx *sql.Tx, paginationInput models.TablePaginationDataInput) ([]models.MasterWorkCategory, models.PaginationInfo, error) {
 
 	var masterWorkCategories []models.MasterWorkCategory
@@ -108,7 +107,6 @@ func (r *MasterWorkCategoriesRepo) Find(tx *sql.Tx, paginationInput models.Table
 	return masterWorkCategories, paginationData, nil
 }
 
-// TODO: Testing Create [MasterWorkCategoriesRepo]
 func (r *MasterWorkCategoriesRepo) Create(tx *sql.Tx, categoriesData models.MasterWorkCategoryCreate) error {
 
 	query := "INSERT INTO master_work_categories (user_id, category_name, display_order) VALUES (?, ?, ?)"
@@ -124,7 +122,6 @@ func (r *MasterWorkCategoriesRepo) Create(tx *sql.Tx, categoriesData models.Mast
 	return nil
 }
 
-// TODO: Testing Update [MasterWorkCategoriesRepo]
 func (r *MasterWorkCategoriesRepo) Update(tx *sql.Tx, categoriesData models.MasterWorkCategory) error {
 
 	query := "UPDATE master_work_categories SET category_name = ?, display_order = ? WHERE category_id = ? AND user_id = ?"
@@ -143,6 +140,20 @@ func (r *MasterWorkCategoriesRepo) Update(tx *sql.Tx, categoriesData models.Mast
 
 // Delete deletes a work category
 func (r *MasterWorkCategoriesRepo) Delete(tx *sql.Tx, categoriesData models.MasterWorkCategory) error {
+	// bcs the ai fucked up, here check if the work categories is used in the project, if used so make it error
+	var id int
+	query_check_data := "SELECT category_id FROM project_work_items WHERE category_id = ? LIMIT 1"
+	_ = tx.QueryRow(
+		query_check_data,
+		categoriesData.CategoryId,
+	).Scan(
+		&id,
+	)
+
+	if id != 0 {
+		return fmt.Errorf("data work categories used in project, cannot delete this data")
+	}
+
 	query := "DELETE FROM master_work_categories WHERE category_id = ?"
 	if _, err := tx.Exec(query, categoriesData.CategoryId); err != nil {
 		return err

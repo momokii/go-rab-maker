@@ -216,6 +216,36 @@ func (r *ProjectsRepo) Update(tx *sql.Tx, projectData models.Project) error {
 
 // Delete deletes a project
 func (r *ProjectsRepo) Delete(tx *sql.Tx, projectData models.Project) error {
+	// -------------------------------------------------------------------------
+	// STEP 1: Delete Grandchild Data (project_item_costs)
+	// -------------------------------------------------------------------------
+	// We remove the lowest level data first using a subquery.
+	// Logic: Delete costs where the work_item belongs to this project_id.
+	query_delete_item_costs := `
+        DELETE FROM project_item_costs 
+        WHERE work_item_id IN (
+            SELECT work_item_id 
+            FROM project_work_items 
+            WHERE project_id = ?
+        )`
+
+	if _, err := tx.Exec(query_delete_item_costs, projectData.ProjectId); err != nil {
+		return err
+	}
+
+	// -------------------------------------------------------------------------
+	// STEP 2: Delete Child Data (project_work_items)
+	// -------------------------------------------------------------------------
+	// Now that the costs are gone, we can safely remove the work items.
+	query_delete_work_items := "DELETE FROM project_work_items WHERE project_id = ?"
+	if _, err := tx.Exec(query_delete_work_items, projectData.ProjectId); err != nil {
+		return err
+	}
+
+	// -------------------------------------------------------------------------
+	// STEP 3: Delete Main Data (projects)
+	// -------------------------------------------------------------------------
+	// Finally, remove the project itself.
 	query := "DELETE FROM projects WHERE project_id = ?"
 	if _, err := tx.Exec(query, projectData.ProjectId); err != nil {
 		return err

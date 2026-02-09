@@ -14,13 +14,14 @@ func NewMaterialSummaryRepo() *MaterialSummaryRepo {
 
 // GetAllMaterialsSummary gets material summary across all projects for a user
 func (r *MaterialSummaryRepo) GetAllMaterialsSummary(tx *sql.Tx, userId int) ([]models.MaterialSummary, error) {
-	query := `
+	// Get materials
+	materialsQuery := `
 		SELECT
 			m.material_id as item_id,
 			m.material_name as item_name,
 			SUM(pic.quantity_needed) as total_quantity,
 			m.unit,
-			'material' as item_type,
+			'MATERIAL' as item_type,
 			SUM(pic.total_cost) as total_cost
 		FROM project_item_costs pic
 		JOIN master_materials m ON pic.master_item_id = m.material_id
@@ -28,19 +29,58 @@ func (r *MaterialSummaryRepo) GetAllMaterialsSummary(tx *sql.Tx, userId int) ([]
 		JOIN projects p ON pwi.project_id = p.project_id
 		WHERE p.user_id = ? AND pic.item_type = 'MATERIAL'
 		GROUP BY m.material_id, m.material_name, m.unit
-		ORDER BY m.material_name
 	`
 
-	rows, err := tx.Query(query, userId)
+	// Get labor
+	laborQuery := `
+		SELECT
+			lt.labor_type_id as item_id,
+			lt.role_name as item_name,
+			SUM(pic.quantity_needed) as total_quantity,
+			lt.unit,
+			'LABOR' as item_type,
+			SUM(pic.total_cost) as total_cost
+		FROM project_item_costs pic
+		JOIN master_labor_types lt ON pic.master_item_id = lt.labor_type_id
+		JOIN project_work_items pwi ON pic.work_item_id = pwi.work_item_id
+		JOIN projects p ON pwi.project_id = p.project_id
+		WHERE p.user_id = ? AND pic.item_type = 'LABOR'
+		GROUP BY lt.labor_type_id, lt.role_name, lt.unit
+	`
+
+	// Execute materials query
+	materialsRows, err := tx.Query(materialsQuery, userId)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer materialsRows.Close()
 
 	var summaries []models.MaterialSummary
-	for rows.Next() {
+	for materialsRows.Next() {
 		var summary models.MaterialSummary
-		if err := rows.Scan(
+		if err := materialsRows.Scan(
+			&summary.ItemId,
+			&summary.ItemName,
+			&summary.TotalQuantity,
+			&summary.Unit,
+			&summary.ItemType,
+			&summary.TotalCost,
+		); err != nil {
+			return nil, err
+		}
+		summaries = append(summaries, summary)
+	}
+
+	// Execute labor query
+	laborRows, err := tx.Query(laborQuery, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer laborRows.Close()
+
+	for laborRows.Next() {
+		var summary models.MaterialSummary
+		if err := laborRows.Scan(
 			&summary.ItemId,
 			&summary.ItemName,
 			&summary.TotalQuantity,
@@ -58,32 +98,71 @@ func (r *MaterialSummaryRepo) GetAllMaterialsSummary(tx *sql.Tx, userId int) ([]
 
 // GetProjectMaterialSummary gets material summary for a specific project
 func (r *MaterialSummaryRepo) GetProjectMaterialSummary(tx *sql.Tx, projectId int) ([]models.MaterialSummary, error) {
-	query := `
+	// Get materials
+	materialsQuery := `
 		SELECT
 			m.material_id as item_id,
 			m.material_name as item_name,
 			SUM(pic.quantity_needed) as total_quantity,
 			m.unit,
-			'material' as item_type,
+			'MATERIAL' as item_type,
 			SUM(pic.total_cost) as total_cost
 		FROM project_item_costs pic
 		JOIN master_materials m ON pic.master_item_id = m.material_id
 		JOIN project_work_items pwi ON pic.work_item_id = pwi.work_item_id
 		WHERE pwi.project_id = ? AND pic.item_type = 'MATERIAL'
 		GROUP BY m.material_id, m.material_name, m.unit
-		ORDER BY m.material_name
 	`
 
-	rows, err := tx.Query(query, projectId)
+	// Get labor
+	laborQuery := `
+		SELECT
+			lt.labor_type_id as item_id,
+			lt.role_name as item_name,
+			SUM(pic.quantity_needed) as total_quantity,
+			lt.unit,
+			'LABOR' as item_type,
+			SUM(pic.total_cost) as total_cost
+		FROM project_item_costs pic
+		JOIN master_labor_types lt ON pic.master_item_id = lt.labor_type_id
+		JOIN project_work_items pwi ON pic.work_item_id = pwi.work_item_id
+		WHERE pwi.project_id = ? AND pic.item_type = 'LABOR'
+		GROUP BY lt.labor_type_id, lt.role_name, lt.unit
+	`
+
+	// Execute materials query
+	materialsRows, err := tx.Query(materialsQuery, projectId)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer materialsRows.Close()
 
 	var summaries []models.MaterialSummary
-	for rows.Next() {
+	for materialsRows.Next() {
 		var summary models.MaterialSummary
-		if err := rows.Scan(
+		if err := materialsRows.Scan(
+			&summary.ItemId,
+			&summary.ItemName,
+			&summary.TotalQuantity,
+			&summary.Unit,
+			&summary.ItemType,
+			&summary.TotalCost,
+		); err != nil {
+			return nil, err
+		}
+		summaries = append(summaries, summary)
+	}
+
+	// Execute labor query
+	laborRows, err := tx.Query(laborQuery, projectId)
+	if err != nil {
+		return nil, err
+	}
+	defer laborRows.Close()
+
+	for laborRows.Next() {
+		var summary models.MaterialSummary
+		if err := laborRows.Scan(
 			&summary.ItemId,
 			&summary.ItemName,
 			&summary.TotalQuantity,

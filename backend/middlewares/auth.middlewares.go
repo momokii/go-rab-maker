@@ -29,16 +29,19 @@ const (
 type SessionMiddleware struct{}
 
 func NewSessionMiddleware() *SessionMiddleware {
+	// Check if running in production environment
+	// Default to development mode if ENV is not set
+	isProduction := os.Getenv("ENV") == "production"
 
 	Store = session.New(session.Config{
 		Expiration:     7 * time.Hour,
-		CookieSecure:   true,
+		CookieSecure:   isProduction, // Only use Secure cookies on HTTPS (production)
 		CookieHTTPOnly: true,
 		// CookieName:     SESSION_APP_COOKIE_ID, // not using CookiNaame because we set it in KeyLookup and Cookiname is deprecated in latest fiber version
 		KeyLookup: "cookie:" + SESSION_APP_COOKIE_ID,
 	})
 
-	log.Println("Session store initialized")
+	log.Println("Session store initialized (production mode: ", isProduction, ")")
 
 	return &SessionMiddleware{}
 }
@@ -146,40 +149,36 @@ func (m *SessionMiddleware) IsAuth(c *fiber.Ctx) error {
 
 	var userSession models.SessionUser
 
+	// TODO: Fetch real user data from database instead of using dummy data
+	// The commented code below shows the original intent, but it requires:
+	// 1. Adding dbService and userRepo to SessionMiddleware struct
+	// 2. Properly handling the users repository
+	// For now, we use the userid from session which is sufficient for authorization
+	//
 	// err, _ = m.dbService.Transaction(c.Context(), func(tx *sql.Tx) (error, int) {
-	// 	sessData, err := m.sessionRepo.FindSession(tx, session_id.(string), userid.(int))
-	// 	if err != nil {
-	// 		return err, fiber.StatusInternalServerError
-	// 	}
-
-	// 	if sessData.Id == 0 && sessData.UserId == 0 && sessData.SessionId == "" {
-	// 		return fiber.NewError(fiber.StatusUnauthorized, "Session not found"), fiber.StatusUnauthorized
-	// 	}
-
-	// 	userData, err := m.userRepo.FindByID(tx, userid.(int))
-	// 	if err != nil {
-	// 		return err, fiber.StatusInternalServerError
-	// 	}
-
-	// 	userSession = sso_models.UserSession{
-	// 		Id:               userData.Id,
-	// 		Username:         userData.Username,
-	// 		CreditToken:      userData.CreditToken,
-	// 		LastFirstLLMUsed: userData.LastFirstLLMUsed,
-	// 	}
-
-	// 	return nil, fiber.StatusOK
+	//     usersRepo := users.NewUsersRepo()
+	//     userData, err := usersRepo.FindByID(tx, userid.(int))
+	//     if err != nil {
+	//         return err, fiber.StatusInternalServerError
+	//     }
+	//     userSession = models.SessionUser{
+	//         ID:    userData.Id,
+	//         Email: userData.Email,
+	//         Role:  userData.Role,
+	//     }
+	//     return nil, fiber.StatusOK
 	// })
 
 	if err != nil {
 		return handleRedirectAuthMiddleware(c, LOGIN_PAGE_URL, true)
 	}
 
-	// ! dummy userSessionData
+	// Temporary: Use session userid only
+	// In production, fetch full user data from database
 	userSession = models.SessionUser{
-		ID:    userid.(int),
-		Email: "admin@admin.com",
-		Role:  "admin",
+		ID: userid.(int),
+		// Email and Role should be fetched from database
+		// Leaving these empty for now as they are not currently used
 	}
 
 	// set user data session to local session data for parsing it to main handlers

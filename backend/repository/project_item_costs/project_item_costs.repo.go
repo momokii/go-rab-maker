@@ -241,7 +241,13 @@ func (r *ProjectItemCostsRepo) GetMaterialSummaryByProjectId(tx *sql.Tx, project
 		LEFT JOIN master_materials mm ON pic.item_type = 'MATERIAL' AND pic.master_item_id = mm.material_id
 		LEFT JOIN master_labor_types mlt ON pic.item_type = 'LABOR' AND pic.master_item_id = mlt.labor_type_id
 		WHERE pwi.project_id = ?
-		GROUP BY pic.master_item_id, pic.item_name, unit, pic.item_type
+		GROUP BY pic.master_item_id, pic.item_name,
+		         CASE
+		             WHEN pic.item_type = 'MATERIAL' THEN mm.unit
+		             WHEN pic.item_type = 'LABOR' THEN mlt.unit
+		             ELSE ''
+		         END,
+		         pic.item_type
 		ORDER BY pic.item_type, pic.item_name
 	`
 
@@ -290,7 +296,13 @@ func (r *ProjectItemCostsRepo) GetDetailedMaterialSummaryByProjectId(tx *sql.Tx,
 		LEFT JOIN master_materials mm ON pic.item_type = 'MATERIAL' AND pic.master_item_id = mm.material_id
 		LEFT JOIN master_labor_types mlt ON pic.item_type = 'LABOR' AND pic.master_item_id = mlt.labor_type_id
 		WHERE pwi.project_id = ?
-		GROUP BY pic.master_item_id, pic.item_name, unit, pic.item_type
+		GROUP BY pic.master_item_id, pic.item_name,
+		         CASE
+		             WHEN pic.item_type = 'MATERIAL' THEN mm.unit
+		             WHEN pic.item_type = 'LABOR' THEN mlt.unit
+		             ELSE ''
+		         END,
+		         pic.item_type
 		ORDER BY pic.item_type, pic.item_name
 	`
 

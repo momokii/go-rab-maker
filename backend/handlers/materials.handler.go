@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/a-h/templ"
@@ -209,21 +210,10 @@ func (h *MaterialHandler) CreateMaterial(c *fiber.Ctx) error {
 	// Get user from session (using the same approach as in auth.handler.go)
 	userData := c.Locals(middlewares.SESSION_USER_NAME).(models.SessionUser)
 
-	// Extract form data
-	materialName := c.FormValue("material_name")
-	unit := c.FormValue("material_unit")
-	defaultPriceStr := c.FormValue("material_defaultUnitPrice")
-
-	// Validate input
-	if materialName == "" {
-		return utils.ResponseErrorModal(c, "Validation Error", "Material name is required")
-	}
-	if unit == "" {
-		return utils.ResponseErrorModal(c, "Validation Error", "Unit is required")
-	}
-	if defaultPriceStr == "" {
-		return utils.ResponseErrorModal(c, "Validation Error", "Default unit price is required")
-	}
+	// Extract form data with input sanitization (trim whitespace)
+	materialName := strings.TrimSpace(c.FormValue("material_name"))
+	unit := strings.TrimSpace(c.FormValue("material_unit"))
+	defaultPriceStr := strings.TrimSpace(c.FormValue("material_defaultUnitPrice"))
 
 	// Convert price to float64
 	defaultPrice, err := strconv.ParseFloat(defaultPriceStr, 64)
@@ -237,6 +227,12 @@ func (h *MaterialHandler) CreateMaterial(c *fiber.Ctx) error {
 		Unit:             unit,
 		DefaultUnitPrice: defaultPrice,
 		UserId:           userData.ID,
+	}
+
+	// Validate using validator tags
+	if err := utils.ValidateStruct(materialData); err != nil {
+		errors := utils.GetValidationErrors(err)
+		return utils.ResponseErrorModal(c, "Validation Error", strings.Join(errors, "; "))
 	}
 
 	// Create material in database
@@ -268,26 +264,29 @@ func (h *MaterialHandler) UpdateMaterial(c *fiber.Ctx) error {
 	// Get user from session (using the same approach as in auth.handler.go)
 	userData := c.Locals(middlewares.SESSION_USER_NAME).(models.SessionUser)
 
-	// Extract form data
-	materialName := c.FormValue("material_name")
-	unit := c.FormValue("material_unit")
-	defaultPriceStr := c.FormValue("material_defaultUnitPrice")
-
-	// Validate input
-	if materialName == "" {
-		return utils.ResponseErrorModal(c, "Validation Error", "Material name is required")
-	}
-	if unit == "" {
-		return utils.ResponseErrorModal(c, "Validation Error", "Unit is required")
-	}
-	if defaultPriceStr == "" {
-		return utils.ResponseErrorModal(c, "Validation Error", "Default unit price is required")
-	}
+	// Extract form data with input sanitization (trim whitespace)
+	materialName := strings.TrimSpace(c.FormValue("material_name"))
+	unit := strings.TrimSpace(c.FormValue("material_unit"))
+	defaultPriceStr := strings.TrimSpace(c.FormValue("material_defaultUnitPrice"))
 
 	// Convert price to float64
 	defaultPrice, err := strconv.ParseFloat(defaultPriceStr, 64)
 	if err != nil {
 		return utils.ResponseErrorModal(c, "Validation Error", "Invalid default price format")
+	}
+
+	// Create material data for validation
+	materialData := models.MasterMaterialCreate{
+		MaterialName:     materialName,
+		Unit:             unit,
+		DefaultUnitPrice: defaultPrice,
+		UserId:           userData.ID,
+	}
+
+	// Validate using validator tags
+	if err := utils.ValidateStruct(materialData); err != nil {
+		errors := utils.GetValidationErrors(err)
+		return utils.ResponseErrorModal(c, "Validation Error", strings.Join(errors, "; "))
 	}
 
 	// Update material in database

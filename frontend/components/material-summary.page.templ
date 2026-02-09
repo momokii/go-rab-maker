@@ -119,7 +119,10 @@ templ MaterialSummaryPage(materials []models.MaterialSummary) {
 							<thead class="bg-gray-50">
 								<tr>
 									<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-										Material Name
+										Type
+									</th>
+									<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+										Item Name
 									</th>
 									<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										Total Quantity
@@ -128,28 +131,43 @@ templ MaterialSummaryPage(materials []models.MaterialSummary) {
 										Unit
 									</th>
 									<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+										Unit Price
+									</th>
+									<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 										Total Cost
 									</th>
 								</tr>
 							</thead>
 							<tbody class="bg-white divide-y divide-gray-200">
 								for _, material := range materials {
-									// if material.TotalQuantity > 0 { 
-										<tr class="hover:bg-gray-50 transition-colors">
-											<td class="px-6 py-4 whitespace-nowrap">
-												<div class="text-sm font-medium text-gray-900">{ material.ItemName }</div>
-											</td>
-											<td class="px-6 py-4 whitespace-nowrap">
-												<div class="text-sm text-gray-900">{ fmt.Sprintf("%.2f", material.TotalQuantity) }</div>
-											</td>
-											<td class="px-6 py-4 whitespace-nowrap">
-												<div class="text-sm text-gray-500">{ material.Unit }</div>
-											</td>
-											<td class="px-6 py-4 whitespace-nowrap">
-												<div class="text-sm font-medium text-gray-900">Rp { fmt.Sprintf("%.0f", material.TotalCost) }</div>
-											</td>
-										</tr>
-									// }
+									<tr class="hover:bg-gray-50 transition-colors">
+										<td class="px-6 py-4 whitespace-nowrap">
+											if material.ItemType == "MATERIAL" {
+												<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+													Material
+												</span>
+											} else if material.ItemType == "LABOR" {
+												<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+													Labor
+												</span>
+											}
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap">
+											<div class="text-sm font-medium text-gray-900">{ material.ItemName }</div>
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap">
+											<div class="text-sm text-gray-900">{ fmt.Sprintf("%.2f", material.TotalQuantity) }</div>
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap">
+											<div class="text-sm text-gray-500">{ material.Unit }</div>
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap">
+											<div class="text-sm text-gray-900">Rp { fmt.Sprintf("%.0f", calculateUnitPrice(material.TotalCost, material.TotalQuantity)) }</div>
+										</td>
+										<td class="px-6 py-4 whitespace-nowrap">
+											<div class="text-sm font-medium text-gray-900">Rp { fmt.Sprintf("%.0f", material.TotalCost) }</div>
+										</td>
+									</tr>
 								}
 							</tbody>
 						</table>
@@ -158,4 +176,12 @@ templ MaterialSummaryPage(materials []models.MaterialSummary) {
 			</div>
 		</div>
 	}
+}
+
+// Helper function to calculate unit price
+func calculateUnitPrice(totalCost, totalQuantity float64) float64 {
+	if totalQuantity == 0 {
+		return 0
+	}
+	return totalCost / totalQuantity
 }

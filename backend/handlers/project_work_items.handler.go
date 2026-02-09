@@ -15,9 +15,9 @@ import (
 	"github.com/momokii/go-rab-maker/backend/middlewares"
 	"github.com/momokii/go-rab-maker/backend/models"
 	"github.com/momokii/go-rab-maker/backend/repository/ahsp_labor_components"
-	ahsp_material_components "github.com/momokii/go-rab-maker/backend/repository/ahsp_material_components.repo.go"
+	ahsp_material_components "github.com/momokii/go-rab-maker/backend/repository/ahsp_material_components"
 	ahsptemplates "github.com/momokii/go-rab-maker/backend/repository/ahsp_templates"
-	master_work_categories "github.com/momokii/go-rab-maker/backend/repository/masater_work_categories"
+	master_work_categories "github.com/momokii/go-rab-maker/backend/repository/master_work_categories"
 	"github.com/momokii/go-rab-maker/backend/repository/master_labor_types"
 	"github.com/momokii/go-rab-maker/backend/repository/master_materials"
 	"github.com/momokii/go-rab-maker/backend/repository/project_item_costs"
@@ -412,9 +412,6 @@ func (h *ProjectWorkItemsHandler) ProjectWorkItemCostsView(c *fiber.Ctx) error {
 
 // CreateProjectWorkItem handles the creation of a new work item
 func (h *ProjectWorkItemsHandler) CreateProjectWorkItem(c *fiber.Ctx) error {
-	// Add small delay for better UX
-	time.Sleep(500 * time.Millisecond)
-
 	projectIdStr := c.Params("id")
 	projectId, err := strconv.Atoi(projectIdStr)
 	if err != nil {
@@ -505,16 +502,14 @@ func (h *ProjectWorkItemsHandler) CreateProjectWorkItem(c *fiber.Ctx) error {
 			log.Printf("Calculating costs for template ID %d, work item ID %d", *ahspTemplateId, newWorkItemId)
 			if err := h.calculateAndCreateCosts(tx, *ahspTemplateId, volume, newWorkItemId); err != nil {
 				log.Printf("Error calculating costs: %v", err)
-				// Don't fail the entire operation if cost calculation fails
-				// Just log the error and continue
+				return fiber.StatusInternalServerError, fmt.Errorf("cost calculation failed: %w", err)
 			}
 		} else {
 			// Handle manual cost entry
 			log.Printf("Processing manual cost entry for work item ID %d", newWorkItemId)
 			if err := h.processManualCostEntry(tx, c, newWorkItemId, volume); err != nil {
 				log.Printf("Error processing manual cost entry: %v", err)
-				// Don't fail the entire operation if manual cost entry fails
-				// Just log the error and continue
+				return fiber.StatusInternalServerError, fmt.Errorf("manual cost entry failed: %w", err)
 			}
 		}
 
@@ -529,9 +524,6 @@ func (h *ProjectWorkItemsHandler) CreateProjectWorkItem(c *fiber.Ctx) error {
 
 // UpdateProjectWorkItem handles the update of an existing work item
 func (h *ProjectWorkItemsHandler) UpdateProjectWorkItem(c *fiber.Ctx) error {
-	// Add small delay for better UX
-	time.Sleep(500 * time.Millisecond)
-
 	projectIdStr := c.Params("id")
 	workItemIdStr := c.Params("workItemId")
 
@@ -645,16 +637,14 @@ func (h *ProjectWorkItemsHandler) UpdateProjectWorkItem(c *fiber.Ctx) error {
 		if ahspTemplateId != nil {
 			if err := h.calculateAndCreateCosts(tx, *ahspTemplateId, volume, workItemId); err != nil {
 				log.Printf("Error recalculating costs: %v", err)
-				// Don't fail the entire operation if cost calculation fails
-				// Just log the error and continue
+				return fiber.StatusInternalServerError, fmt.Errorf("cost recalculation failed: %w", err)
 			}
 		} else {
 			// Handle manual cost entry for updates
 			log.Printf("Processing manual cost entry for updated work item ID %d", workItemId)
 			if err := h.processManualCostEntry(tx, c, workItemId, volume); err != nil {
 				log.Printf("Error processing manual cost entry: %v", err)
-				// Don't fail the entire operation if manual cost entry fails
-				// Just log the error and continue
+				return fiber.StatusInternalServerError, fmt.Errorf("manual cost entry failed: %w", err)
 			}
 		}
 
@@ -669,9 +659,6 @@ func (h *ProjectWorkItemsHandler) UpdateProjectWorkItem(c *fiber.Ctx) error {
 
 // DeleteProjectWorkItem handles the deletion of a work item
 func (h *ProjectWorkItemsHandler) DeleteProjectWorkItem(c *fiber.Ctx) error {
-	// Add small delay for better UX
-	time.Sleep(500 * time.Millisecond)
-
 	projectIdStr := c.Params("id")
 	workItemIdStr := c.Params("workItemId")
 

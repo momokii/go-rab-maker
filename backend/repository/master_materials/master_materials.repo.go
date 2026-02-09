@@ -2,6 +2,7 @@ package master_materials
 
 import (
 	"database/sql"
+	"log"
 	"math"
 
 	"github.com/momokii/go-rab-maker/backend/models"
@@ -13,10 +14,10 @@ func NewMasterMaterialsRepo() *MasterMaterialsRepo {
 	return &MasterMaterialsRepo{}
 }
 
-// TODO: testing FindById [MasterMaterialsRepo]
 func (r *MasterMaterialsRepo) FindById(tx *sql.Tx, masterMaterialId int) (models.MasterMaterial, error) {
 
 	var material models.MasterMaterial
+	var userId sql.NullInt64
 
 	query := "SELECT material_id, user_id, material_name, unit, default_unit_price, created_at, updated_at FROM master_materials WHERE material_id = ?"
 	if err := tx.QueryRow(
@@ -24,7 +25,7 @@ func (r *MasterMaterialsRepo) FindById(tx *sql.Tx, masterMaterialId int) (models
 		masterMaterialId,
 	).Scan(
 		&material.MaterialId,
-		&material.UserId,
+		&userId,
 		&material.MaterialName,
 		&material.Unit,
 		&material.DefaultUnitPrice,
@@ -34,6 +35,13 @@ func (r *MasterMaterialsRepo) FindById(tx *sql.Tx, masterMaterialId int) (models
 		// makesure also error is not err because not found
 
 		return material, err
+	}
+
+	// Convert sql.NullInt64 to int (0 if NULL)
+	if userId.Valid {
+		material.UserId = int(userId.Int64)
+	} else {
+		material.UserId = 0
 	}
 
 	return material, nil
@@ -53,15 +61,16 @@ func (r *MasterMaterialsRepo) Find(tx *sql.Tx, paginationInput models.TablePagin
 
 	// if using search data
 	if paginationInput.Search != "" {
-		base_query += " AND material_name = ?"
-		query_total += " AND material_name = ?"
-		params = append(params, paginationInput.Search)
+		base_query += " AND material_name LIKE ?"
+		query_total += " AND material_name LIKE ?"
+		params = append(params, "%"+paginationInput.Search+"%")
 	}
 
 	// if using user_id
 	if userId != 0 {
-		base_query += " AND user_id = ?"
-		query_total += " AND user_id = ?"
+		// Include both user-specific items and system-wide defaults (user_id IS NULL)
+		base_query += " AND (user_id = ? OR user_id IS NULL)"
+		query_total += " AND (user_id = ? OR user_id IS NULL)"
 		params = append(params, userId)
 	}
 
@@ -84,10 +93,11 @@ func (r *MasterMaterialsRepo) Find(tx *sql.Tx, paginationInput models.TablePagin
 
 	for rows.Next() {
 		var mateial models.MasterMaterial
+		var userId sql.NullInt64
 
 		if err := rows.Scan(
 			&mateial.MaterialId,
-			&mateial.UserId,
+			&userId,
 			&mateial.MaterialName,
 			&mateial.Unit,
 			&mateial.DefaultUnitPrice,
@@ -95,9 +105,16 @@ func (r *MasterMaterialsRepo) Find(tx *sql.Tx, paginationInput models.TablePagin
 			&mateial.UpdatedAt,
 		); err != nil {
 			return materials, paginationData, err
-		} else {
-			materials = append(materials, mateial)
 		}
+
+		// Convert sql.NullInt64 to int (0 if NULL)
+		if userId.Valid {
+			mateial.UserId = int(userId.Int64)
+		} else {
+			mateial.UserId = 0
+		}
+
+		materials = append(materials, mateial)
 	}
 
 	// pagination data
@@ -116,7 +133,6 @@ func (r *MasterMaterialsRepo) Find(tx *sql.Tx, paginationInput models.TablePagin
 	return materials, paginationData, nil
 }
 
-// TODO: testing Create [MasterMaterialsRepo]
 func (r *MasterMaterialsRepo) Create(tx *sql.Tx, materialData models.MasterMaterialCreate) error {
 
 	query := "INSERT INTO master_materials (material_name, unit, default_unit_price, user_id) VALUES (?, ?, ?, ?)"
@@ -133,9 +149,10 @@ func (r *MasterMaterialsRepo) Create(tx *sql.Tx, materialData models.MasterMater
 	return nil
 }
 
-// TODO: testing update materials
+// TODO: [update] testing
 func (r *MasterMaterialsRepo) Update(tx *sql.Tx, materialData models.MasterMaterial) error {
 
+	// update main data
 	query := "UPDATE master_materials SET material_name = ?, unit = ?, default_unit_price = ? WHERE material_id = ? AND user_id = ?"
 	if _, err := tx.Exec(
 		query,
@@ -148,18 +165,61 @@ func (r *MasterMaterialsRepo) Update(tx *sql.Tx, materialData models.MasterMater
 		return err
 	}
 
+	// add below if this data will related to another table
+
+	// make sure also update form the project_item_costs table
+	query_update_project_item_costs := `
+		UPDATE 
+			project_item_costs 
+		SET
+			item_name = ?,
+			unit_price_at_creation = ?,
+			total_cost = quantity_needed * ?
+		WHERE master_item_id = ?`
+	if _, err := tx.Exec(
+		query_update_project_item_costs,
+		materialData.MaterialName,
+		materialData.DefaultUnitPrice,
+		materialData.DefaultUnitPrice,
+		materialData.MaterialId,
+	); err != nil {
+		log.Println(err)
+		return err
+	}
+
 	return nil
 }
 
-// TODO: testing delete materials
 func (r *MasterMaterialsRepo) Delete(tx *sql.Tx, materialData models.MasterMaterial) error {
 
-	query := "DELETE FROM master_materials WHERE material_id = ?"
-	if _, err := tx.Exec(query, materialData.MaterialId); err != nil {
-		return nil
+	// delete main data
+	query_delete_material := "DELETE FROM master_materials WHERE material_id = ?"
+	if _, err := tx.Exec(
+		query_delete_material,
+		materialData.MaterialId,
+	); err != nil {
+		return err
 	}
 
 	// add below if this data will related to another table
+
+	// make sure to delete the related id at ahsp_material_component table
+	query_delete_ahsp_material := "DELETE FROM ahsp_material_components WHERE material_id = ?"
+	if _, err := tx.Exec(
+		query_delete_ahsp_material,
+		materialData.MaterialId,
+	); err != nil {
+		return err
+	}
+
+	// make sure also delete from the project_item_costs table
+	query_delete_project_item_costs := "DELETE FROM project_item_costs WHERE master_item_id = ?"
+	if _, err := tx.Exec(
+		query_delete_project_item_costs,
+		materialData.MaterialId,
+	); err != nil {
+		return err
+	}
 
 	return nil
 }

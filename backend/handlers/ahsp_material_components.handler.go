@@ -12,7 +12,7 @@ import (
 	"github.com/momokii/go-rab-maker/backend/middlewares"
 	"github.com/momokii/go-rab-maker/backend/models"
 	ahsp_labor_components "github.com/momokii/go-rab-maker/backend/repository/ahsp_labor_components"
-	ahsp_material_components "github.com/momokii/go-rab-maker/backend/repository/ahsp_material_components.repo.go"
+	ahsp_material_components "github.com/momokii/go-rab-maker/backend/repository/ahsp_material_components"
 	ahsptemplates "github.com/momokii/go-rab-maker/backend/repository/ahsp_templates"
 	"github.com/momokii/go-rab-maker/backend/repository/master_materials"
 	"github.com/momokii/go-rab-maker/backend/utils"

@@ -102,6 +102,9 @@ templ ProjectMaterialSummary(materials []models.MaterialSummary, project models.
 								Unit
 							</th>
 							<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+								Unit Price
+							</th>
+							<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
 								Total Cost
 							</th>
 						</tr>
@@ -130,6 +133,9 @@ templ ProjectMaterialSummary(materials []models.MaterialSummary, project models.
 									<div class="text-sm text-gray-500">{ material.Unit }</div>
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap">
+									<div class="text-sm text-gray-900">Rp { fmt.Sprintf("%.2f", calculateUnitPrice(material.TotalCost, material.TotalQuantity)) }</div>
+								</td>
+								<td class="px-6 py-4 whitespace-nowrap">
 									<div class="text-sm font-medium text-gray-900">Rp { fmt.Sprintf("%.2f", material.TotalCost) }</div>
 								</td>
 							</tr>
@@ -137,7 +143,7 @@ templ ProjectMaterialSummary(materials []models.MaterialSummary, project models.
 					</tbody>
 					<tfoot class="bg-gray-50">
 						<tr>
-							<th scope="row" colspan="4" class="px-6 py-3 text-right text-sm font-medium text-gray-900">
+							<th scope="row" colspan="5" class="px-6 py-3 text-right text-sm font-medium text-gray-900">
 								Total Cost
 							</th>
 							<td class="px-6 py-3 text-left text-sm font-bold text-gray-900">

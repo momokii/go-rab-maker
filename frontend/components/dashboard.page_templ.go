@@ -168,7 +168,7 @@ func DashboardPage(projects []models.Project, totalProjects int, totalCost float
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = BaseMain("Dashboard2", "dashboard1").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = BaseMain("Dashboard", "dashboard").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

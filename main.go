@@ -13,10 +13,10 @@ import (
 	"github.com/momokii/go-rab-maker/backend/handlers"
 	"github.com/momokii/go-rab-maker/backend/middlewares"
 	"github.com/momokii/go-rab-maker/backend/repository/ahsp_labor_components"
-	ahsp_material_components "github.com/momokii/go-rab-maker/backend/repository/ahsp_material_components.repo.go"
+	ahsp_material_components "github.com/momokii/go-rab-maker/backend/repository/ahsp_material_components"
 	ahsptemplates "github.com/momokii/go-rab-maker/backend/repository/ahsp_templates"
 	"github.com/momokii/go-rab-maker/backend/repository/dashboard"
-	master_work_categories "github.com/momokii/go-rab-maker/backend/repository/masater_work_categories"
+	master_work_categories "github.com/momokii/go-rab-maker/backend/repository/master_work_categories"
 	"github.com/momokii/go-rab-maker/backend/repository/master_labor_types"
 	"github.com/momokii/go-rab-maker/backend/repository/master_materials"
 	"github.com/momokii/go-rab-maker/backend/repository/material_summary"
@@ -29,8 +29,6 @@ import (
 )
 
 func main() {
-	log.Println(utils.GetBaseDir())
-
 	// databases setup using sqlite
 	databases.InitDatabaseSQLite()
 	dbServices, err := databases.NewSQLiteDatabases(databases.DATABASE_SQLITE_PATH)
@@ -146,13 +144,6 @@ func main() {
 	app.Post("/logout", session.IsAuth, authHandler.Logout)
 
 	app.Get("/", session.IsAuth, dashboardHandler.Dashboard)
-	app.Get("/countries/new", session.IsAuth, handlers.CreateCountriesModal)
-	app.Get("/countries/:id/edit", session.IsAuth, handlers.EditCountriesModal)
-	app.Post("/countries/:id/edit", session.IsAuth, handlers.EditCountries)
-	app.Get("/countries/:id/delete", session.IsAuth, handlers.DeleteCountriesModal)
-	app.Delete("/countries/:id/delete", session.IsAuth, handlers.DeleteCountries)
-	app.Post("/countries/new", session.IsAuth, handlers.AddNewCountries)
-
 	// materials
 	app.Get("/materials", session.IsAuth, masterMaterialsHandler.MaterialsMainPageTableView)
 	app.Get("/materials/new", session.IsAuth, masterMaterialsHandler.MaterialCreateModalView)
@@ -230,8 +221,6 @@ func main() {
 	// project work item costs
 	app.Get("/work-items/:id/costs", session.IsAuth, projectWorkItemsHandler.ProjectWorkItemCostsView)
 
-	app.Get("/countries", session.IsAuth, handlers.CountriesView)
-
 	// Dashboard route (replacing countries as the main landing page)
 	app.Get("/dashboard", session.IsAuth, dashboardHandler.Dashboard)
 
@@ -242,13 +231,6 @@ func main() {
 	// Project Material Summary routes
 	app.Get("/projects/:id/material-summary", session.IsAuth, materialSummaryHandler.ProjectMaterialSummary)
 	app.Get("/projects/:id/material-summary/export", session.IsAuth, materialSummaryHandler.ExportProjectMaterialSummary)
-
-	app.Get("/countries/:id", handlers.GetCountryDetails)
-	app.Get("/search", handlers.SearchCountries)
-
-	app.Get("/demo/loading-test", handlers.DemoLoadingTest)
-	app.Get("/demo/success-test", handlers.SucceessModalTest)
-	app.Get("/demo/error-test", handlers.ErrorModalTest)
 
 	startServerWithGracefulShutdown(app)
 }
