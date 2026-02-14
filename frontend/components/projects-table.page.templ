@@ -107,7 +107,7 @@ templ ProjectsPage(projects []models.Project, paginationInfo models.PaginationIn
 													</svg>
 												</button>
 												<button
-													hx-get={ "/projects/" + strconv.Itoa(project.ProjectId) + "/delete" }
+													hx-get={ "/projects/" + strconv.Itoa(project.ProjectId) + "/delete-confirm" }
 													hx-target="#htmx-modal-container"
 													hx-trigger="click"
 													class="text-red-600 hover:text-red-900 font-medium"

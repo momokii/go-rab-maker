@@ -159,20 +159,49 @@ templ Base(title string) {
                     }
                 }
 
+                // Close modal and reset form
+                function closeModalAndReset(formId) {
+                    closeModal();
+                    setTimeout(() => {
+                        const form = document.getElementById(formId);
+                        if (form) {
+                            form.reset();
+                            // Also reset any dynamic material/labor rows to initial state
+                            const materialsContainer = document.getElementById('manual-materials');
+                            const laborContainer = document.getElementById('manual-labor');
+                            if (materialsContainer && materialsContainer.children.length > 1) {
+                                // Keep only the first row
+                                while (materialsContainer.children.length > 1) {
+                                    materialsContainer.removeChild(materialsContainer.lastChild);
+                                }
+                            }
+                            if (laborContainer && laborContainer.children.length > 1) {
+                                // Keep only the first row
+                                while (laborContainer.children.length > 1) {
+                                    laborContainer.removeChild(laborContainer.lastChild);
+                                }
+                            }
+                        }
+                    }, 100);
+                }
+
                 // Manual cost entry functions
                 function toggleManualCostFields(templateId) {
                     const manualCostSection = document.getElementById('manual-cost-section');
-                    if (templateId === '') {
-                        manualCostSection.style.display = 'block';
-                    } else {
-                        manualCostSection.style.display = 'none';
+                    if (manualCostSection) {
+                        if (templateId === '' || templateId === null || templateId === undefined) {
+                            manualCostSection.style.display = 'block';
+                        } else {
+                            manualCostSection.style.display = 'none';
+                        }
                     }
                 }
 
                 function addManualMaterialRow() {
                     const container = document.getElementById('manual-materials');
+                    if (!container) return;
                     const newRow = document.createElement('div');
-                    newRow.className = 'manual-material-row flex gap-2';
+                    newRow.className = 'manual-material-row flex gap-2 mb-2';
                     newRow.innerHTML = `
                         <input type="text" name="manual_material_name[]" placeholder="Material name"
                                class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -182,7 +211,7 @@ templ Base(title string) {
                                class="w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                         <input type="number" name="manual_material_price[]" placeholder="Price" step="0.01"
                                class="w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <button type="button" onclick="removeManualRow(this)"
+                        <button type="button" onclick="removeManualMaterialRow(this)"
                                 class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline">
                             -
                         </button>
@@ -192,8 +221,9 @@ templ Base(title string) {
 
                 function addManualLaborRow() {
                     const container = document.getElementById('manual-labor');
+                    if (!container) return;
                     const newRow = document.createElement('div');
-                    newRow.className = 'manual-labor-row flex gap-2';
+                    newRow.className = 'manual-labor-row flex gap-2 mb-2';
                     newRow.innerHTML = `
                         <input type="text" name="manual_labor_name[]" placeholder="Labor type"
                                class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -203,7 +233,7 @@ templ Base(title string) {
                                class="w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                         <input type="number" name="manual_labor_price[]" placeholder="Price" step="0.01"
                                class="w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <button type="button" onclick="removeManualRow(this)"
+                        <button type="button" onclick="removeManualLaborRow(this)"
                                 class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline">
                             -
                         </button>
@@ -211,8 +241,36 @@ templ Base(title string) {
                     container.appendChild(newRow);
                 }
 
+                function removeManualMaterialRow(button) {
+                    const row = button.parentElement;
+                    const container = document.getElementById('manual-materials');
+                    if (container && container.children.length > 1) {
+                        row.remove();
+                    }
+                }
+
+                function removeManualLaborRow(button) {
+                    const row = button.parentElement;
+                    const container = document.getElementById('manual-labor');
+                    if (container && container.children.length > 1) {
+                        row.remove();
+                    }
+                }
+
                 function removeManualRow(button) {
                     button.parentElement.remove();
+                }
+
+                // Initialize manual cost fields for project work item form
+                function initializeManualCostFields() {
+                    const templateSelect = document.getElementById('ahsp_template_id');
+                    if (templateSelect) {
+                        if (templateSelect.value === '' || templateSelect.value === null) {
+                            toggleManualCostFields('');
+                        } else {
+                            toggleManualCostFields(templateSelect.value);
+                        }
+                    }
                 }
             </script>
             

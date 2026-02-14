@@ -109,6 +109,12 @@ func NewSQLiteDatabases(databasesPath string) (SQLiteServices, error) {
 	// only single writer to avoid SQLITE_BUSY
 	write.SetMaxOpenConns(1)
 
+	// CRITICAL: Enable foreign keys on write connection
+	// Without this, all CASCADE/RESTRICT constraints in the schema are NOT enforced
+	if _, err := write.Exec("PRAGMA foreign_keys = ON"); err != nil {
+		return nil, fmt.Errorf("failed to enable foreign keys on write connection: %w", err)
+	}
+
 	// setup for read database
 	read, err := sql.Open("sqlite", "file:"+databasesPath)
 	if err != nil {
@@ -122,6 +128,12 @@ func NewSQLiteDatabases(databasesPath string) (SQLiteServices, error) {
 
 	read.SetMaxOpenConns(100)
 	read.SetConnMaxIdleTime(time.Minute)
+
+	// CRITICAL: Enable foreign keys on read connection
+	// Without this, all CASCADE/RESTRICT constraints in the schema are NOT enforced
+	if _, err := read.Exec("PRAGMA foreign_keys = ON"); err != nil {
+		return nil, fmt.Errorf("failed to enable foreign keys on read connection: %w", err)
+	}
 
 	log.Println("SQLite database connection established successfully at: ", databasesPath)
 

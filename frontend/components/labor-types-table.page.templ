@@ -34,7 +34,7 @@ templ LaborTypesTablePage(laborTypes []models.MasterLaborType, paginationInfo mo
                             <td>{laborType.UpdatedAt}</td>
                             <td>
                                 <div class="join">
-                                    // <a href={templ.SafeURL("/labor_types/" + strconv.Itoa(laborType.LaborTypeId))} 
+                                    // <a href={templ.SafeURL("/labor_types/" + strconv.Itoa(laborType.LaborTypeId))}
                                     //     class="btn btn-ghost btn-sm join-item">
                                     //     View
                                     // </a>
@@ -44,7 +44,7 @@ templ LaborTypesTablePage(laborTypes []models.MasterLaborType, paginationInfo mo
                                         Edit
                                     </button>
                                     <button class="btn btn-ghost btn-error btn-sm join-item"
-                                        hx-get={"/labor_types/" + strconv.Itoa(laborType.LaborTypeId) + "/delete"}
+                                        hx-get={"/labor_types/" + strconv.Itoa(laborType.LaborTypeId) + "/delete-confirm"}
                                         hx-target="#htmx-modal-container">
                                         Delete
                                     </button>

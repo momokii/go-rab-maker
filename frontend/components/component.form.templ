@@ -34,27 +34,36 @@ templ BaseFormModal(config ModalConfig) {
             <div class="flex justify-between items-center mb-4">
                 <h3 class="font-bold text-lg">{config.Title}</h3>
                 if config.ShowClose {
-                    <button class="btn btn-sm btn-circle btn-ghost" onclick="closeModal()">✕</button>
+                    <button class="btn btn-sm btn-circle btn-ghost"
+                            onclick={templ.SafeURL("closeModalAndReset('" + config.FormId + "')")}>✕</button>
                 }
             </div>
-            
+
             <!-- Form Content -->
-            <form id={config.FormId} 
+            <form id={config.FormId}
                 hx-post={config.FormAction}
                 hx-target={config.Target}
                 hx-indicator="#htmx-loading"
+                hx-on::after-request="if(event.detail.successful) closeModal()"
                 class="space-y-4">
                 { children... }
-                
+
                 if !config.HideSubmit {
                     <div class="modal-action">
-                        <button type="submit" class="btn btn-primary">{config.SubmitLabel}</button>
-                        <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" hx-disabled-elt="this" hx-indicator="#htmx-loading">
+                            <span>{config.SubmitLabel}</span>
+                            <span class="htmx-indicator">
+                                <span class="loading loading-spinner text-primary"></span>
+                            </span>
+                        </button>
+                        <button type="button" class="btn"
+                                onclick={templ.SafeURL("closeModalAndReset('" + config.FormId + "')")}>Cancel</button>
                     </div>
                 }
             </form>
         </div>
-        <div class="modal-backdrop" onclick="closeModal()"></div>
+        <div class="modal-backdrop"
+              onclick={templ.SafeURL("closeModalAndReset('" + config.FormId + "')")}></div>
     </div>
 }
 

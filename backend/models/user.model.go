@@ -1,13 +1,18 @@
 package models
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"database/sql"
+
+	"golang.org/x/crypto/bcrypt"
+)
 
 type User struct {
-	UserId    int    `json:"user_id"`
-	Username  string `json:"username"`
-	Password  string `json:"password"` // This will store the hashed password
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	UserId    int            `json:"user_id"`
+	Username  string         `json:"username"`
+	Password  string         `json:"password"` // This will store the hashed password
+	CreatedAt string         `json:"created_at"`
+	UpdatedAt string         `json:"updated_at"`
+	DeletedAt sql.NullString `json:"deleted_at,omitempty"` // Soft delete timestamp
 }
 
 type UserCreate struct {

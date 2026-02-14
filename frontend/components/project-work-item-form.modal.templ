@@ -16,7 +16,7 @@ templ ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWi
 					}
 				</h3>
 				
-				<form
+				<form id="project-work-item-form"
 					if isEdit {
 						hx-post={"/project/" + strconv.Itoa(projectId) + "/work-items/" + strconv.Itoa(workItem.WorkItemId) + "/edit"}
 					} else {
@@ -24,7 +24,7 @@ templ ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWi
 					}
 					hx-target="body"
 					hx-swap="outerHTML"
-					hx-on::after-request="document.getElementById('project-work-item-modal').remove()"
+					hx-on::after-request="if(event.detail.successful) closeModal()"
 					enctype="multipart/form-data">
 					
 					<div class="mb-4">
@@ -162,168 +162,31 @@ templ ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWi
 					}
 
 					<div class="flex justify-end space-x-2">
-						<button 
+						<button
 							type="button"
-							onclick="document.getElementById('project-work-item-modal').remove()"
+							onclick="closeModalAndReset('project-work-item-form')"
 							class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
 							Cancel
 						</button>
-						<button 
+						<button
 							type="submit"
-							class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-							if isEdit {
-								Update
-							} else {
-								Add
-							}
+							class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+							hx-disabled-elt="this"
+							hx-indicator="#htmx-loading">
+							<span class="btn-text">
+								if isEdit {
+									Update
+								} else {
+									Add
+								}
+							</span>
+							<span class="htmx-indicator">
+								<span class="loading loading-spinner text-primary"></span>
+							</span>
 						</button>
 					</div>
 				</form>
 			</div>
 		</div>
 	</div>
-
-	<script>
-		// Toggle manual cost fields based on template selection
-		function toggleManualCostFields(templateId) {
-			console.log('=== TOGGLE MANUAL COST FIELDS ===');
-			console.log('Template ID:', templateId);
-			console.log('Template ID type:', typeof templateId);
-			console.log('Template ID === "":', templateId === '');
-			console.log('Template ID === null:', templateId === null);
-			console.log('Template ID === undefined:', templateId === undefined);
-			
-			const manualSection = document.getElementById('manual-cost-section');
-			console.log('Manual section found:', !!manualSection);
-			
-			if (manualSection) {
-				console.log('Current display style:', manualSection.style.display);
-				
-				if (templateId === '' || templateId === null || templateId === undefined) {
-					manualSection.style.display = 'block';
-					console.log('Setting display to block');
-				} else {
-					manualSection.style.display = 'none';
-					console.log('Setting display to none');
-				}
-				
-				console.log('New display style:', manualSection.style.display);
-			} else {
-				console.error('Manual cost section not found in DOM');
-			}
-			console.log('=== END TOGGLE MANUAL COST FIELDS ===');
-		}
-
-		// Add new material row
-		function addManualMaterialRow() {
-			const container = document.getElementById('manual-materials');
-			const newRow = document.createElement('div');
-			newRow.className = 'manual-material-row flex gap-2 mb-2';
-			newRow.innerHTML = `
-				<input type="text" name="manual_material_name[]" placeholder="Material name"
-					class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-				<input type="number" name="manual_material_quantity[]" placeholder="Qty" step="0.01"
-					class="w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-				<input type="text" name="manual_material_unit[]" placeholder="Unit"
-					class="w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-				<input type="number" name="manual_material_price[]" placeholder="Price" step="0.01"
-					class="w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-				<button type="button" onclick="removeManualMaterialRow(this)"
-						class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline">
-					-
-				</button>
-			`;
-			container.appendChild(newRow);
-		}
-
-		// Add new labor row
-		function addManualLaborRow() {
-			const container = document.getElementById('manual-labor');
-			const newRow = document.createElement('div');
-			newRow.className = 'manual-labor-row flex gap-2 mb-2';
-			newRow.innerHTML = `
-				<input type="text" name="manual_labor_name[]" placeholder="Labor type"
-					class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-				<input type="number" name="manual_labor_quantity[]" placeholder="Qty" step="0.01"
-					class="w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-				<input type="text" name="manual_labor_unit[]" placeholder="Unit"
-					class="w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-				<input type="number" name="manual_labor_price[]" placeholder="Price" step="0.01"
-					class="w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-				<button type="button" onclick="removeManualLaborRow(this)"
-						class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline">
-					-
-				</button>
-			`;
-			container.appendChild(newRow);
-		}
-
-		// Remove material row
-		function removeManualMaterialRow(button) {
-			const row = button.parentElement;
-			const container = document.getElementById('manual-materials');
-			if (container.children.length > 1) {
-				row.remove();
-			}
-		}
-
-		// Remove labor row
-		function removeManualLaborRow(button) {
-			const row = button.parentElement;
-			const container = document.getElementById('manual-labor');
-			if (container.children.length > 1) {
-				row.remove();
-			}
-		}
-
-		// Initialize manual cost fields (works with both page load and HTMX)
-		function initializeManualCostFields() {
-			console.log('=== INITIALIZING MANUAL COST FIELDS ===');
-			
-			const templateSelect = document.getElementById('ahsp_template_id');
-			console.log('Template select found:', !!templateSelect);
-			
-			if (templateSelect) {
-				console.log('Template select value:', templateSelect.value);
-				console.log('Template select value type:', typeof templateSelect.value);
-				
-				// For new work items, check if no template is selected
-				if (templateSelect.value === '' || templateSelect.value === null) {
-					console.log('No template selected, showing manual cost fields');
-					toggleManualCostFields('');
-				} else {
-					console.log('Template selected, hiding manual cost fields');
-					toggleManualCostFields(templateSelect.value);
-				}
-				
-				// Add change listener to template select
-				templateSelect.removeEventListener('change', handleTemplateChange);
-				templateSelect.addEventListener('change', handleTemplateChange);
-				console.log('Change listener added to template select');
-			} else {
-				console.error('Template select not found');
-			}
-			
-			console.log('=== END INITIALIZING MANUAL COST FIELDS ===');
-		}
-
-		// Handle template change event
-		function handleTemplateChange(event) {
-			console.log('=== TEMPLATE CHANGE EVENT ===');
-			console.log('Event target:', event.target);
-			console.log('Event target value:', event.target.value);
-			toggleManualCostFields(event.target.value);
-			console.log('=== END TEMPLATE CHANGE EVENT ===');
-		}
-
-		// Initialize on page load as well
-		document.addEventListener('DOMContentLoaded', function() {
-			console.log('=== DOM CONTENT LOADED ===');
-			// Small delay to ensure DOM is ready
-			setTimeout(function() {
-				console.log('Running delayed initialization');
-				initializeManualCostFields();
-			}, 100);
-		});
-	</script>
 }

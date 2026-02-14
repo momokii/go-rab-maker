@@ -74,11 +74,15 @@ templ RegisterPage() {
                         </div>
 
                         <div class="form-control mt-8">
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 class="btn btn-primary w-full"
-                            >
-                                Create Account
+                                hx-disabled-elt="this"
+                                hx-indicator="#htmx-loading">
+                                <span class="btn-text">Create Account</span>
+                                <span class="htmx-indicator">
+                                    <span class="loading loading-spinner text-primary"></span>
+                                </span>
                             </button>
                         </div>
                     </form>

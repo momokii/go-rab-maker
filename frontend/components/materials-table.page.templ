@@ -32,7 +32,7 @@ templ MaterialsTablePage(materials []models.MasterMaterial, paginationInfo model
                             <td>{material.CreatedAt}</td>
                             <td>
                                 <div class="join">
-                                    // <a href={templ.SafeURL("/materials/" + strconv.Itoa(material.MaterialId))} 
+                                    // <a href={templ.SafeURL("/materials/" + strconv.Itoa(material.MaterialId))}
                                     //     class="btn btn-ghost btn-sm join-item">
                                     //     View
                                     // </a>
@@ -42,7 +42,7 @@ templ MaterialsTablePage(materials []models.MasterMaterial, paginationInfo model
                                         Edit
                                     </button>
                                     <button class="btn btn-ghost btn-error btn-sm join-item"
-                                        hx-get={"/materials/" + strconv.Itoa(material.MaterialId) + "/delete"}
+                                        hx-get={"/materials/" + strconv.Itoa(material.MaterialId) + "/delete-confirm"}
                                         hx-target="#htmx-modal-container">
                                         Delete
                                     </button>

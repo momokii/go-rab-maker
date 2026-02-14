@@ -57,11 +57,15 @@ templ LoginPage() {
                         </div>
 
                         <div class="form-control mt-8">
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 class="btn btn-primary w-full"
-                            >
-                                Sign in
+                                hx-disabled-elt="this"
+                                hx-indicator="#htmx-loading">
+                                <span class="btn-text">Sign in</span>
+                                <span class="htmx-indicator">
+                                    <span class="loading loading-spinner text-primary"></span>
+                                </span>
                             </button>
                         </div>
                     </form>

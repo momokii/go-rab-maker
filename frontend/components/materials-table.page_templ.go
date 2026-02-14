@@ -160,9 +160,9 @@ func MaterialsTablePage(materials []models.MasterMaterial, paginationInfo models
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var10 string
-						templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs("/materials/" + strconv.Itoa(material.MaterialId) + "/delete")
+						templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs("/materials/" + strconv.Itoa(material.MaterialId) + "/delete-confirm")
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/materials-table.page.templ`, Line: 45, Col: 109}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/materials-table.page.templ`, Line: 45, Col: 117}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 						if templ_7745c5c3_Err != nil {

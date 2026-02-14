@@ -160,52 +160,39 @@ func (r *AhspTemplatesRepo) Update(tx *sql.Tx, templateData models.AHSPTemplate)
 	return nil
 }
 
+// Delete deletes an AHSP template and its associated components.
+// IMPORTANT: Blocks deletion if the template is currently used in any work items
+// to maintain data integrity and prevent breaking existing project estimates.
 func (r *AhspTemplatesRepo) Delete(tx *sql.Tx, templateData models.AHSPTemplate) error {
-	// -------------------------------------------------------------------------
-	// OPTIMIZATION: REMOVE LOOP (N+1 Query)
-	// -------------------------------------------------------------------------
-
-	// 1. Delete data from the "grandchild" table (project_item_costs) first.
-	// We use a subquery to identify which costs to delete based on the template ID.
-	// CRITICAL: This must be executed BEFORE deleting 'project_work_items',
-	// otherwise the subquery will return empty results.
-	query_delete_project_item_costs := `
-        DELETE FROM project_item_costs 
-        WHERE work_item_id IN (
-            SELECT work_item_id 
-            FROM project_work_items 
-            WHERE ahsp_template_id = ?
-        )`
-
-	if _, err := tx.Exec(query_delete_project_item_costs, templateData.TemplateId); err != nil {
+	// VALIDATION: Check if template is used in any work items
+	var usageCount int
+	checkQuery := `
+		SELECT COUNT(*)
+		FROM project_work_items
+		WHERE ahsp_template_id = ?`
+	err := tx.QueryRow(checkQuery, templateData.TemplateId).Scan(&usageCount)
+	if err != nil {
 		return err
 	}
 
-	// 2. Delete from 'project_work_items' (the child table)
-	query_delete_project_work_items := "DELETE FROM project_work_items WHERE ahsp_template_id = ?"
-	if _, err := tx.Exec(query_delete_project_work_items, templateData.TemplateId); err != nil {
-		return err
+	// Block deletion if template is in use
+	if usageCount > 0 {
+		return sql.ErrTxDone // Use a recognizable error for "used" case
 	}
 
-	// -------------------------------------------------------------------------
-	// STANDARD DELETIONS
-	// -------------------------------------------------------------------------
-
-	// 3. Delete related material components
+	// Delete related material components
 	query_delete_material := "DELETE FROM ahsp_material_components WHERE template_id = ?"
 	if _, err := tx.Exec(query_delete_material, templateData.TemplateId); err != nil {
 		return err
 	}
 
-	// 4. Delete related labor components
+	// Delete related labor components
 	query_delete_labor := "DELETE FROM ahsp_labor_components WHERE template_id = ?"
 	if _, err := tx.Exec(query_delete_labor, templateData.TemplateId); err != nil {
 		return err
 	}
 
-	// 5. Finally, delete the main template data
-	// It is best practice to delete the parent row last to maintain referential integrity
-	// logic during the transaction.
+	// Finally, delete the template
 	query := "DELETE FROM ahsp_templates WHERE template_id = ?"
 	if _, err := tx.Exec(query, templateData.TemplateId); err != nil {
 		return err

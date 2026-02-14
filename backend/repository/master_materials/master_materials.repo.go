@@ -2,7 +2,6 @@ package master_materials
 
 import (
 	"database/sql"
-	"log"
 	"math"
 
 	"github.com/momokii/go-rab-maker/backend/models"
@@ -149,7 +148,10 @@ func (r *MasterMaterialsRepo) Create(tx *sql.Tx, materialData models.MasterMater
 	return nil
 }
 
-// TODO: [update] testing
+// Update updates a master material.
+// IMPORTANT: This does NOT update project_item_costs to preserve historical cost data.
+// When a material price changes, historical project estimates should remain unchanged
+// to reflect the costs at the time the project was created.
 func (r *MasterMaterialsRepo) Update(tx *sql.Tx, materialData models.MasterMaterial) error {
 
 	// update main data
@@ -162,28 +164,6 @@ func (r *MasterMaterialsRepo) Update(tx *sql.Tx, materialData models.MasterMater
 		materialData.MaterialId,
 		materialData.UserId,
 	); err != nil {
-		return err
-	}
-
-	// add below if this data will related to another table
-
-	// make sure also update form the project_item_costs table
-	query_update_project_item_costs := `
-		UPDATE 
-			project_item_costs 
-		SET
-			item_name = ?,
-			unit_price_at_creation = ?,
-			total_cost = quantity_needed * ?
-		WHERE master_item_id = ?`
-	if _, err := tx.Exec(
-		query_update_project_item_costs,
-		materialData.MaterialName,
-		materialData.DefaultUnitPrice,
-		materialData.DefaultUnitPrice,
-		materialData.MaterialId,
-	); err != nil {
-		log.Println(err)
 		return err
 	}
 

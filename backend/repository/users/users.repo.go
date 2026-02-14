@@ -16,7 +16,7 @@ func NewUsersRepo() *UsersRepo {
 func (r *UsersRepo) FindById(tx *sql.Tx, userId int) (models.User, error) {
 	var user models.User
 
-	query := "SELECT user_id, username, password, created_at, updated_at FROM users WHERE user_id = ?"
+	query := "SELECT user_id, username, password, created_at, updated_at, deleted_at FROM users WHERE user_id = ?"
 	if err := tx.QueryRow(
 		query,
 		userId,
@@ -26,6 +26,7 @@ func (r *UsersRepo) FindById(tx *sql.Tx, userId int) (models.User, error) {
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.DeletedAt,
 	); err != nil {
 		return user, err
 	}
@@ -33,11 +34,11 @@ func (r *UsersRepo) FindById(tx *sql.Tx, userId int) (models.User, error) {
 	return user, nil
 }
 
-// FindByUsername retrieves a user by their username
+// FindByUsername retrieves an active (non-deleted) user by their username
 func (r *UsersRepo) FindByUsername(tx *sql.Tx, username string) (models.User, error) {
 	var user models.User
 
-	query := "SELECT user_id, username, password, created_at, updated_at FROM users WHERE username = ?"
+	query := "SELECT user_id, username, password, created_at, updated_at, deleted_at FROM users WHERE username = ? AND deleted_at IS NULL"
 	if err := tx.QueryRow(
 		query,
 		username,
@@ -47,6 +48,7 @@ func (r *UsersRepo) FindByUsername(tx *sql.Tx, username string) (models.User, er
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.DeletedAt,
 	); err != nil {
 		return user, err
 	}
@@ -83,4 +85,12 @@ func (r *UsersRepo) Update(tx *sql.Tx, userData models.User) error {
 	}
 
 	return nil
+}
+
+// SoftDelete marks a user as deleted without removing the record
+// This preserves data for audit purposes while preventing login
+func (r *UsersRepo) SoftDelete(tx *sql.Tx, userId int) error {
+	query := `UPDATE users SET deleted_at = datetime('now') WHERE user_id = ?`
+	_, err := tx.Exec(query, userId)
+	return err
 }

@@ -196,15 +196,37 @@ func (r *ProjectWorkItemRepo) Update(tx *sql.Tx, workItem models.ProjectWorkItem
 	return err
 }
 
-// Delete deletes a project work item
+// Delete deletes a project work item and cascades to associated project item costs
 func (r *ProjectWorkItemRepo) Delete(tx *sql.Tx, workItem models.ProjectWorkItem) error {
+	// STEP 1: Delete associated costs first (child table)
+	// This prevents orphaned records in project_item_costs
+	queryDeleteCosts := `DELETE FROM project_item_costs WHERE work_item_id = ?`
+	if _, err := tx.Exec(queryDeleteCosts, workItem.WorkItemId); err != nil {
+		return err
+	}
+
+	// STEP 2: Delete the work item (parent table)
 	query := `DELETE FROM project_work_items WHERE work_item_id = ?`
 	_, err := tx.Exec(query, workItem.WorkItemId)
 	return err
 }
 
-// DeleteByProjectId deletes all work items for a specific project
+// DeleteByProjectId deletes all work items for a specific project and cascades to associated project item costs
 func (r *ProjectWorkItemRepo) DeleteByProjectId(tx *sql.Tx, projectId int) error {
+	// STEP 1: Delete associated costs using subquery
+	// This prevents orphaned records in project_item_costs
+	queryDeleteCosts := `
+		DELETE FROM project_item_costs
+		WHERE work_item_id IN (
+			SELECT work_item_id
+			FROM project_work_items
+			WHERE project_id = ?
+		)`
+	if _, err := tx.Exec(queryDeleteCosts, projectId); err != nil {
+		return err
+	}
+
+	// STEP 2: Delete work items
 	query := `DELETE FROM project_work_items WHERE project_id = ?`
 	_, err := tx.Exec(query, projectId)
 	return err

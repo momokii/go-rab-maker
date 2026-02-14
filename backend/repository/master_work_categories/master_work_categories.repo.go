@@ -138,22 +138,27 @@ func (r *MasterWorkCategoriesRepo) Update(tx *sql.Tx, categoriesData models.Mast
 	return nil
 }
 
-// Delete deletes a work category
+// Delete deletes a work category.
+// IMPORTANT: Blocks deletion if the category is currently used in any work items
+// to maintain data integrity and prevent breaking existing project structures.
 func (r *MasterWorkCategoriesRepo) Delete(tx *sql.Tx, categoriesData models.MasterWorkCategory) error {
-	// bcs the ai fucked up, here check if the work categories is used in the project, if used so make it error
-	var id int
-	query_check_data := "SELECT category_id FROM project_work_items WHERE category_id = ? LIMIT 1"
-	_ = tx.QueryRow(
-		query_check_data,
-		categoriesData.CategoryId,
-	).Scan(
-		&id,
-	)
-
-	if id != 0 {
-		return fmt.Errorf("data work categories used in project, cannot delete this data")
+	// VALIDATION: Check if category is used in any work items
+	var usageCount int
+	checkQuery := `
+		SELECT COUNT(*)
+		FROM project_work_items
+		WHERE category_id = ?`
+	err := tx.QueryRow(checkQuery, categoriesData.CategoryId).Scan(&usageCount)
+	if err != nil {
+		return err
 	}
 
+	// Block deletion if category is in use
+	if usageCount > 0 {
+		return fmt.Errorf("cannot delete category: used in %d work items", usageCount)
+	}
+
+	// Delete the category
 	query := "DELETE FROM master_work_categories WHERE category_id = ?"
 	if _, err := tx.Exec(query, categoriesData.CategoryId); err != nil {
 		return err

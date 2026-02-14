@@ -150,6 +150,10 @@ func (r *MasterLaborTypesRepo) Create(tx *sql.Tx, laborData models.MasterLaborTy
 	return nil
 }
 
+// Update updates a master labor type.
+// IMPORTANT: This does NOT update project_item_costs to preserve historical cost data.
+// When a labor wage changes, historical project estimates should remain unchanged
+// to reflect the costs at the time the project was created.
 func (r *MasterLaborTypesRepo) Update(tx *sql.Tx, laborData models.MasterLaborType) error {
 
 	query := "UPDATE master_labor_types SET role_name = ?, unit = ?, default_daily_wage = ? WHERE labor_type_id = ? AND user_id = ?"
@@ -160,27 +164,6 @@ func (r *MasterLaborTypesRepo) Update(tx *sql.Tx, laborData models.MasterLaborTy
 		laborData.DefaultDailyWage,
 		laborData.LaborTypeId,
 		laborData.UserId,
-	); err != nil {
-		return err
-	}
-
-	// add below if this data will related to another table
-
-	// make sure also update form the project_item_costs table
-	query_update_project_item_costs := `
-		UPDATE 
-			project_item_costs 
-		SET
-			item_name = ?,
-			unit_price_at_creation = ?,
-			total_cost = quantity_needed * ?
-		WHERE master_item_id = ?`
-	if _, err := tx.Exec(
-		query_update_project_item_costs,
-		laborData.RoleName,
-		laborData.DefaultDailyWage,
-		laborData.DefaultDailyWage,
-		laborData.LaborTypeId,
 	); err != nil {
 		return err
 	}
