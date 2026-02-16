@@ -16,7 +16,7 @@ func NewUsersRepo() *UsersRepo {
 func (r *UsersRepo) FindById(tx *sql.Tx, userId int) (models.User, error) {
 	var user models.User
 
-	query := "SELECT user_id, username, password, created_at, updated_at, deleted_at FROM users WHERE user_id = ?"
+	query := "SELECT user_id, username, password, created_at, updated_at FROM users WHERE user_id = ?"
 	if err := tx.QueryRow(
 		query,
 		userId,
@@ -26,7 +26,6 @@ func (r *UsersRepo) FindById(tx *sql.Tx, userId int) (models.User, error) {
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
-		&user.DeletedAt,
 	); err != nil {
 		return user, err
 	}
@@ -38,7 +37,7 @@ func (r *UsersRepo) FindById(tx *sql.Tx, userId int) (models.User, error) {
 func (r *UsersRepo) FindByUsername(tx *sql.Tx, username string) (models.User, error) {
 	var user models.User
 
-	query := "SELECT user_id, username, password, created_at, updated_at, deleted_at FROM users WHERE username = ? AND deleted_at IS NULL"
+	query := "SELECT user_id, username, password, created_at, updated_at FROM users WHERE username = ?"
 	if err := tx.QueryRow(
 		query,
 		username,
@@ -48,7 +47,6 @@ func (r *UsersRepo) FindByUsername(tx *sql.Tx, username string) (models.User, er
 		&user.Password,
 		&user.CreatedAt,
 		&user.UpdatedAt,
-		&user.DeletedAt,
 	); err != nil {
 		return user, err
 	}

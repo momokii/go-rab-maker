@@ -95,7 +95,7 @@ func BaseFormModal(config ModalConfig) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if config.ShowClose {
-			templ_7745c5c3_Err = templ.RenderScriptItems(ctx, templ_7745c5c3_Buffer, templ.SafeURL("closeModalAndReset('"+config.FormId+"')"))
+			templ_7745c5c3_Err = templ.RenderScriptItems(ctx, templ_7745c5c3_Buffer, templ.JSFuncCall("closeModalAndReset", config.FormId))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -103,7 +103,7 @@ func BaseFormModal(config ModalConfig) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var5 templ.ComponentScript = templ.SafeURL("closeModalAndReset('" + config.FormId + "')")
+			var templ_7745c5c3_Var5 templ.ComponentScript = templ.JSFuncCall("closeModalAndReset", config.FormId)
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var5.Call)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -178,7 +178,7 @@ func BaseFormModal(config ModalConfig) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templ.RenderScriptItems(ctx, templ_7745c5c3_Buffer, templ.SafeURL("closeModalAndReset('"+config.FormId+"')"))
+			templ_7745c5c3_Err = templ.RenderScriptItems(ctx, templ_7745c5c3_Buffer, templ.JSFuncCall("closeModalAndReset", config.FormId))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -186,7 +186,7 @@ func BaseFormModal(config ModalConfig) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var10 templ.ComponentScript = templ.SafeURL("closeModalAndReset('" + config.FormId + "')")
+			var templ_7745c5c3_Var10 templ.ComponentScript = templ.JSFuncCall("closeModalAndReset", config.FormId)
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var10.Call)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -200,7 +200,7 @@ func BaseFormModal(config ModalConfig) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templ.RenderScriptItems(ctx, templ_7745c5c3_Buffer, templ.SafeURL("closeModalAndReset('"+config.FormId+"')"))
+		templ_7745c5c3_Err = templ.RenderScriptItems(ctx, templ_7745c5c3_Buffer, templ.JSFuncCall("closeModalAndReset", config.FormId))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -208,7 +208,7 @@ func BaseFormModal(config ModalConfig) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var11 templ.ComponentScript = templ.SafeURL("closeModalAndReset('" + config.FormId + "')")
+		var templ_7745c5c3_Var11 templ.ComponentScript = templ.JSFuncCall("closeModalAndReset", config.FormId)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var11.Call)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

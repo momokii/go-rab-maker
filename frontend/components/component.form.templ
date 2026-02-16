@@ -35,7 +35,7 @@ templ BaseFormModal(config ModalConfig) {
                 <h3 class="font-bold text-lg">{config.Title}</h3>
                 if config.ShowClose {
                     <button class="btn btn-sm btn-circle btn-ghost"
-                            onclick={templ.SafeURL("closeModalAndReset('" + config.FormId + "')")}>✕</button>
+                            onclick={templ.JSFuncCall("closeModalAndReset", config.FormId)}>✕</button>
                 }
             </div>
 
@@ -57,13 +57,13 @@ templ BaseFormModal(config ModalConfig) {
                             </span>
                         </button>
                         <button type="button" class="btn"
-                                onclick={templ.SafeURL("closeModalAndReset('" + config.FormId + "')")}>Cancel</button>
+                                onclick={templ.JSFuncCall("closeModalAndReset", config.FormId)}>Cancel</button>
                     </div>
                 }
             </form>
         </div>
         <div class="modal-backdrop"
-              onclick={templ.SafeURL("closeModalAndReset('" + config.FormId + "')")}></div>
+              onclick={templ.JSFuncCall("closeModalAndReset", config.FormId)}></div>
     </div>
 }
 

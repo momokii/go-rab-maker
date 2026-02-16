@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/momokii/go-rab-maker/backend/utils"
@@ -47,17 +48,6 @@ type SQLiteDB struct {
 }
 
 func runMigrations(db *SQLiteDB) error {
-	// debug function to list the files
-	log.Println("Listing embedded files:")
-	fs.WalkDir(migrationsFS, ".", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			log.Printf("Error walking: %v", err)
-			return nil
-		}
-		log.Printf("Path: %s, IsDir: %t", path, d.IsDir())
-		return nil
-	})
-
 	// Read all migration files
 	entries, err := fs.ReadDir(migrationsFS, "migrations")
 	if err != nil {
@@ -70,18 +60,25 @@ func runMigrations(db *SQLiteDB) error {
 			continue
 		}
 
-		migrationPath := "migrations/" + entry.Name() // Gunakan forward slash
-		log.Println("Running migration:", entry.Name())
-		content, err := migrationsFS.ReadFile(migrationPath) // Perubahan di sini
+		migrationPath := "migrations/" + entry.Name()
+		content, err := migrationsFS.ReadFile(migrationPath)
 		if err != nil {
 			return fmt.Errorf("failed to read migration file %s: %w", entry.Name(), err)
 		}
 
+		// Split content by semicolons to execute each statement separately
+		statements := splitSQL(string(content))
+
 		// Run each statement in transaction for atomicity
 		statusCode, _ := db.Transaction(context.Background(), func(tx *sql.Tx) (int, error) {
-			_, err := tx.Exec(string(content))
-			if err != nil {
-				return http.StatusInternalServerError, fmt.Errorf("failed to execute migration %s: %w", entry.Name(), err)
+			for _, stmt := range statements {
+				if stmt == "" {
+					continue
+				}
+				_, err := tx.Exec(stmt)
+				if err != nil {
+					return http.StatusInternalServerError, fmt.Errorf("failed to execute statement in migration %s: %w", entry.Name(), err)
+				}
 			}
 			return http.StatusOK, nil
 		})
@@ -92,6 +89,41 @@ func runMigrations(db *SQLiteDB) error {
 	}
 
 	return nil
+}
+
+// splitSQL splits SQL content by semicolons, ignoring empty statements
+func splitSQL(sql string) []string {
+	var statements []string
+	var current strings.Builder
+	inQuote := false
+	quoteChar := rune(0)
+
+	for _, ch := range sql {
+		switch {
+		case (ch == '\'' || ch == '"' || ch == '`') && !inQuote:
+			inQuote = true
+			quoteChar = ch
+			current.WriteRune(ch)
+		case ch == quoteChar && inQuote:
+			inQuote = false
+			current.WriteRune(ch)
+		case ch == ';' && !inQuote:
+			stmt := strings.TrimSpace(current.String())
+			if stmt != "" {
+				statements = append(statements, stmt)
+			}
+			current.Reset()
+		default:
+			current.WriteRune(ch)
+		}
+	}
+
+	// Add the last statement if exists
+	if stmt := strings.TrimSpace(current.String()); stmt != "" {
+		statements = append(statements, stmt)
+	}
+
+	return statements
 }
 
 func NewSQLiteDatabases(databasesPath string) (SQLiteServices, error) {

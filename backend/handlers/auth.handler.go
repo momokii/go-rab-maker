@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"database/sql"
-	"log"
 	"time"
 
 	"github.com/a-h/templ"
@@ -67,11 +66,9 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return utils.ResponseErrorModal(c, "Login Failed", "Invalid username or password")
 	}
 
-	// Create session data
+	// Create session data (without hardcoded @example.com)
 	sessionData := models.SessionUser{
-		ID:    user.UserId,
-		Email: user.Username + "@example.com", // Generate a default email
-		Role:  "user",
+		ID: user.UserId,
 	}
 
 	// Generate session ID
@@ -124,7 +121,6 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	// Hash password
 	hashedPassword, err := models.HashPassword(password)
 	if err != nil {
-		log.Printf("Error hashing password: %v", err)
 		return utils.ResponseErrorModal(c, "Registration Failed", "Failed to process registration")
 	}
 
@@ -135,7 +131,7 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	}
 
 	// Check if username already exists and create user
-	if _, err = h.dbService.Transaction(c.Context(), func(tx *sql.Tx) (int, error) {
+	_, err = h.dbService.Transaction(c.Context(), func(tx *sql.Tx) (int, error) {
 		// Check if user already exists
 		_, err := h.usersRepo.FindByUsername(tx, username)
 		if err == nil {
@@ -151,7 +147,9 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		}
 
 		return fiber.StatusOK, nil
-	}); err != nil {
+	})
+
+	if err != nil {
 		if err.Error() == "Username already exists" {
 			return utils.ResponseErrorModal(c, "Registration Failed", "Username already exists")
 		}
