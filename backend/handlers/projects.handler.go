@@ -88,7 +88,7 @@ func (h *ProjectsHandler) ProjectsMainPageTableView(c *fiber.Ctx) error {
 	}
 
 	if c.Get("HX-Request") == "true" {
-		tableComponents := components.ProjectsPage(projects, paginationInfo, tableConfig)
+		tableComponents := components.ProjectsTablePage(projects, paginationInfo, tableConfig)
 		return adaptor.HTTPHandler(templ.Handler(tableComponents))(c)
 	}
 
@@ -243,6 +243,9 @@ func (h *ProjectsHandler) CreateProject(c *fiber.Ctx) error {
 		return utils.ResponseErrorModal(c, "Error", "Failed to create project")
 	}
 
+	// refresh table
+	utils.SetRefreshTableTriggerHeader(c)
+
 	// Return success response with refresh
 	return utils.ResponseSuccessModal(c, "Success", "Project created successfully", true)
 }
@@ -312,6 +315,9 @@ func (h *ProjectsHandler) UpdateProject(c *fiber.Ctx) error {
 		return utils.ResponseErrorModal(c, "Error", "Failed to update project")
 	}
 
+	// refresh table
+	utils.SetRefreshTableTriggerHeader(c)
+
 	// Return success response with refresh
 	return utils.ResponseSuccessModal(c, "Success", "Project updated successfully", true)
 }
@@ -354,6 +360,9 @@ func (h *ProjectsHandler) DeleteProject(c *fiber.Ctx) error {
 	}); err != nil {
 		return utils.ResponseErrorModal(c, "Error", "Failed to delete project")
 	}
+
+	// refresh table
+	utils.SetRefreshTableTriggerHeader(c)
 
 	// Return success response with refresh
 	return utils.ResponseSuccessModal(c, "Success", "Project deleted successfully", true)
