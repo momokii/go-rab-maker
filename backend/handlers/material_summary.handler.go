@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -103,24 +104,69 @@ func (h *MaterialSummaryHandler) ExportMaterialSummary(c *fiber.Ctx) error {
 
 // exportToPDF exports the material summary to PDF format
 func (h *MaterialSummaryHandler) exportToPDF(c *fiber.Ctx, summaries []models.MaterialSummary) (int, error) {
-	// TODO: Implement PDF export functionality
-	// For now, return a placeholder response
 	c.Set("Content-Type", "application/pdf")
 	c.Set("Content-Disposition", "attachment; filename=material-summary.pdf")
 
-	// Placeholder PDF content
-	return fiber.StatusOK, c.Send([]byte("%PDF-1.4\n%âãÏÓ\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n..."))
+	pdf := utils.NewPDFExporter("L", "mm", "A4")
+	pdf.AddTitle("Material Summary")
+
+	// Prepare headers and data
+	headers := []string{"Item Name", "Type", "Total Quantity", "Unit", "Total Cost"}
+	var rows [][]string
+
+	for _, summary := range summaries {
+		rows = append(rows, []string{
+			summary.ItemName,
+			string(summary.ItemType),
+			fmt.Sprintf("%.2f", summary.TotalQuantity),
+			summary.Unit,
+			fmt.Sprintf("%.2f", summary.TotalCost),
+		})
+	}
+
+	pdf.AddTable(headers, rows)
+
+	// Write PDF
+	pdfData, err := pdf.Write()
+	if err != nil {
+		return fiber.StatusInternalServerError, err
+	}
+
+	return fiber.StatusOK, c.Send(pdfData)
 }
 
 // exportToExcel exports the material summary to Excel format
 func (h *MaterialSummaryHandler) exportToExcel(c *fiber.Ctx, summaries []models.MaterialSummary) (int, error) {
-	// TODO: Implement Excel export functionality
-	// For now, return a placeholder response
 	c.Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	c.Set("Content-Disposition", "attachment; filename=material-summary.xlsx")
 
-	// Placeholder Excel content
-	return fiber.StatusOK, c.Send([]byte("PK\x03\x04\x14\x00\x06\x00..."))
+	excel := utils.NewExcelExporter()
+
+	// Prepare headers and data
+	headers := []string{"Item Name", "Type", "Total Quantity", "Unit", "Total Cost"}
+	var rows [][]interface{}
+
+	for _, summary := range summaries {
+		rows = append(rows, []interface{}{
+			summary.ItemName,
+			string(summary.ItemType),
+			summary.TotalQuantity,
+			summary.Unit,
+			summary.TotalCost,
+		})
+	}
+
+	if err := excel.AddSheet("Material Summary", headers, rows); err != nil {
+		return fiber.StatusInternalServerError, err
+	}
+
+	// Write Excel
+	excelData, err := excel.Write()
+	if err != nil {
+		return fiber.StatusInternalServerError, err
+	}
+
+	return fiber.StatusOK, c.Send(excelData)
 }
 
 // ProjectMaterialSummary displays a summary of materials needed for a specific project
@@ -246,22 +292,67 @@ func (h *MaterialSummaryHandler) ExportProjectMaterialSummary(c *fiber.Ctx) erro
 
 // exportProjectToPDF exports the project material summary to PDF format
 func (h *MaterialSummaryHandler) exportProjectToPDF(c *fiber.Ctx, summaries []models.MaterialSummary, project models.Project) (int, error) {
-	// TODO: Implement PDF export functionality with project name
-	// For now, return a placeholder response
 	c.Set("Content-Type", "application/pdf")
 	c.Set("Content-Disposition", "attachment; filename=material-summary-"+project.ProjectName+".pdf")
 
-	// Placeholder PDF content
-	return fiber.StatusOK, c.Send([]byte("%PDF-1.4\n%âãÏÓ\n1 0 obj\n<<\n/Type /Catalog\n/Pages 2 0 R\n>>\nendobj\n..."))
+	pdf := utils.NewPDFExporter("L", "mm", "A4")
+	pdf.AddTitle(fmt.Sprintf("Material Summary - %s", project.ProjectName))
+
+	// Prepare headers and data
+	headers := []string{"Item Name", "Type", "Total Quantity", "Unit", "Total Cost"}
+	var rows [][]string
+
+	for _, summary := range summaries {
+		rows = append(rows, []string{
+			summary.ItemName,
+			string(summary.ItemType),
+			fmt.Sprintf("%.2f", summary.TotalQuantity),
+			summary.Unit,
+			fmt.Sprintf("%.2f", summary.TotalCost),
+		})
+	}
+
+	pdf.AddTable(headers, rows)
+
+	// Write PDF
+	pdfData, err := pdf.Write()
+	if err != nil {
+		return fiber.StatusInternalServerError, err
+	}
+
+	return fiber.StatusOK, c.Send(pdfData)
 }
 
 // exportProjectToExcel exports the project material summary to Excel format
 func (h *MaterialSummaryHandler) exportProjectToExcel(c *fiber.Ctx, summaries []models.MaterialSummary, project models.Project) (int, error) {
-	// TODO: Implement Excel export functionality with project name
-	// For now, return a placeholder response
 	c.Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	c.Set("Content-Disposition", "attachment; filename=material-summary-"+project.ProjectName+".xlsx")
 
-	// Placeholder Excel content
-	return fiber.StatusOK, c.Send([]byte("PK\x03\x04\x14\x00\x06\x00..."))
+	excel := utils.NewExcelExporter()
+
+	// Prepare headers and data
+	headers := []string{"Item Name", "Type", "Total Quantity", "Unit", "Total Cost"}
+	var rows [][]interface{}
+
+	for _, summary := range summaries {
+		rows = append(rows, []interface{}{
+			summary.ItemName,
+			string(summary.ItemType),
+			summary.TotalQuantity,
+			summary.Unit,
+			summary.TotalCost,
+		})
+	}
+
+	if err := excel.AddSheet(fmt.Sprintf("Materials - %s", project.ProjectName), headers, rows); err != nil {
+		return fiber.StatusInternalServerError, err
+	}
+
+	// Write Excel
+	excelData, err := excel.Write()
+	if err != nil {
+		return fiber.StatusInternalServerError, err
+	}
+
+	return fiber.StatusOK, c.Send(excelData)
 }

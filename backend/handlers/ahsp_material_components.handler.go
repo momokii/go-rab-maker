@@ -420,14 +420,20 @@ func (h *AhspMaterialComponentHandler) UpdateAhspMaterialComponent(c *fiber.Ctx)
 	userData := c.Locals(middlewares.SESSION_USER_NAME).(models.SessionUser)
 
 	// Extract form data
+	materialIdStr := c.FormValue("material_id")
 	coefficientStr := c.FormValue("coefficient")
 
 	// Validate input
-	if coefficientStr == "" {
-		return utils.ResponseErrorModal(c, "Validation Error", "Coefficient is required")
+	if materialIdStr == "" || coefficientStr == "" {
+		return utils.ResponseErrorModal(c, "Validation Error", "Material ID and coefficient are required")
 	}
 
 	// Convert to proper types
+	materialId, err := strconv.Atoi(materialIdStr)
+	if err != nil {
+		return utils.ResponseErrorModal(c, "Validation Error", "Invalid material ID format")
+	}
+
 	coefficient, err := strconv.ParseFloat(coefficientStr, 64)
 	if err != nil {
 		return utils.ResponseErrorModal(c, "Validation Error", "Invalid coefficient format")
@@ -450,6 +456,7 @@ func (h *AhspMaterialComponentHandler) UpdateAhspMaterialComponent(c *fiber.Ctx)
 
 		// Update the material component
 		componentData := models.AHSPMaterialComponentUpdate{
+			MaterialId:  materialId,
 			Coefficient: coefficient,
 		}
 

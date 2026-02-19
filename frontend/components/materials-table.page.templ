@@ -42,7 +42,7 @@ templ MaterialsTablePage(materials []models.MasterMaterial, paginationInfo model
                                         Edit
                                     </button>
                                     <button class="btn btn-ghost btn-error btn-sm join-item"
-                                        hx-get={"/materials/" + strconv.Itoa(material.MaterialId) + "/delete-confirm"}
+                                        hx-get={"/materials/" + strconv.Itoa(material.MaterialId) + "/delete"}
                                         hx-target="#htmx-modal-container">
                                         Delete
                                     </button>

@@ -365,6 +365,12 @@ func (h *MaterialHandler) DeleteMaterial(c *fiber.Ctx) error {
 		}
 		return fiber.StatusOK, nil
 	}); err != nil {
+		// Check for foreign key constraint error
+		if strings.Contains(err.Error(), "FOREIGN KEY constraint failed") ||
+			strings.Contains(err.Error(), "constraint failed") {
+			return utils.ResponseErrorModal(c, "Cannot Delete",
+				"Cannot delete this material because it is used in AHSP templates")
+		}
 		return utils.ResponseErrorModal(c, "Error", "Failed to delete material")
 	}
 

@@ -173,9 +173,9 @@ func LaborTypesTablePage(laborTypes []models.MasterLaborType, paginationInfo mod
 							return templ_7745c5c3_Err
 						}
 						var templ_7745c5c3_Var11 string
-						templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs("/labor_types/" + strconv.Itoa(laborType.LaborTypeId) + "/delete-confirm")
+						templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs("/labor_types/" + strconv.Itoa(laborType.LaborTypeId) + "/delete")
 						if templ_7745c5c3_Err != nil {
-							return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/labor-types-table.page.templ`, Line: 47, Col: 121}
+							return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/labor-types-table.page.templ`, Line: 47, Col: 113}
 						}
 						_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 						if templ_7745c5c3_Err != nil {

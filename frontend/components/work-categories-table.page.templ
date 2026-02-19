@@ -43,7 +43,7 @@ templ WorkCategoriesTablePage(workCategories []models.MasterWorkCategory, pagina
                                         Edit
                                     </button>
                                     <button class="btn btn-ghost btn-error btn-sm join-item"
-                                        hx-get={"/work_categories/" + strconv.Itoa(workCategory.CategoryId) + "/delete-confirm"}
+                                        hx-get={"/work_categories/" + strconv.Itoa(workCategory.CategoryId) + "/delete"}
                                         hx-target="#htmx-modal-container">
                                         Delete
                                     </button>

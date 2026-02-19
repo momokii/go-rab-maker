@@ -16,6 +16,7 @@ type AHSPLaborComponentCreate struct {
 }
 
 type AHSPLaborComponentUpdate struct {
+	LaborTypeId int     `json:"labor_type_id" validate:"required"`
 	Coefficient float64 `json:"coefficient" validate:"required,gt=0"`
 }
 

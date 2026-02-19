@@ -44,7 +44,7 @@ templ LaborTypesTablePage(laborTypes []models.MasterLaborType, paginationInfo mo
                                         Edit
                                     </button>
                                     <button class="btn btn-ghost btn-error btn-sm join-item"
-                                        hx-get={"/labor_types/" + strconv.Itoa(laborType.LaborTypeId) + "/delete-confirm"}
+                                        hx-get={"/labor_types/" + strconv.Itoa(laborType.LaborTypeId) + "/delete"}
                                         hx-target="#htmx-modal-container">
                                         Delete
                                     </button>

@@ -42,7 +42,7 @@ templ AhspTemplatesTablePage(ahspTemplates []models.AHSPTemplate, paginationInfo
                                         Edit
                                     </button>
                                     <button class="btn btn-ghost btn-error btn-sm join-item"
-                                        hx-get={"/ahsp_templates/" + strconv.Itoa(ahspTemplate.TemplateId) + "/delete-confirm"}
+                                        hx-get={"/ahsp_templates/" + strconv.Itoa(ahspTemplate.TemplateId) + "/delete"}
                                         hx-target="#htmx-modal-container">
                                         Delete
                                     </button>

@@ -142,9 +142,10 @@ func (r *AHSPMaterialComponentsRepo) Create(tx *sql.Tx, componentData models.AHS
 
 // Update updates an existing AHSP material component
 func (r *AHSPMaterialComponentsRepo) Update(tx *sql.Tx, componentId int, componentData models.AHSPMaterialComponentUpdate) error {
-	query := "UPDATE ahsp_material_components SET coefficient = ? WHERE component_id = ?"
+	query := "UPDATE ahsp_material_components SET material_id = ?, coefficient = ? WHERE component_id = ?"
 	if _, err := tx.Exec(
 		query,
+		componentData.MaterialId,
 		componentData.Coefficient,
 		componentId,
 	); err != nil {

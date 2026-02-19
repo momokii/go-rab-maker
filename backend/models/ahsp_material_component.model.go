@@ -16,6 +16,7 @@ type AHSPMaterialComponentCreate struct {
 }
 
 type AHSPMaterialComponentUpdate struct {
+	MaterialId  int     `json:"material_id" validate:"required"`
 	Coefficient float64 `json:"coefficient" validate:"required,gt=0"`
 }
 

@@ -142,9 +142,10 @@ func (r *AHSPLaborComponentsRepo) Create(tx *sql.Tx, componentData models.AHSPLa
 
 // Update updates an existing AHSP labor component
 func (r *AHSPLaborComponentsRepo) Update(tx *sql.Tx, componentId int, componentData models.AHSPLaborComponentUpdate) error {
-	query := "UPDATE ahsp_labor_components SET coefficient = ? WHERE component_id = ?"
+	query := "UPDATE ahsp_labor_components SET labor_type_id = ?, coefficient = ? WHERE component_id = ?"
 	if _, err := tx.Exec(
 		query,
+		componentData.LaborTypeId,
 		componentData.Coefficient,
 		componentId,
 	); err != nil {

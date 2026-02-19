@@ -391,14 +391,20 @@ func (h *AhspLaborComponentHandler) UpdateAhspLaborComponent(c *fiber.Ctx) error
 	userData := c.Locals(middlewares.SESSION_USER_NAME).(models.SessionUser)
 
 	// Extract form data
+	laborTypeIdStr := c.FormValue("labor_type_id")
 	coefficientStr := c.FormValue("coefficient")
 
 	// Validate input
-	if coefficientStr == "" {
-		return utils.ResponseErrorModal(c, "Validation Error", "Coefficient is required")
+	if laborTypeIdStr == "" || coefficientStr == "" {
+		return utils.ResponseErrorModal(c, "Validation Error", "Labor Type ID and coefficient are required")
 	}
 
 	// Convert to proper types
+	laborTypeId, err := strconv.Atoi(laborTypeIdStr)
+	if err != nil {
+		return utils.ResponseErrorModal(c, "Validation Error", "Invalid labor type ID format")
+	}
+
 	coefficient, err := strconv.ParseFloat(coefficientStr, 64)
 	if err != nil {
 		return utils.ResponseErrorModal(c, "Validation Error", "Invalid coefficient format")
@@ -421,6 +427,7 @@ func (h *AhspLaborComponentHandler) UpdateAhspLaborComponent(c *fiber.Ctx) error
 
 		// Update the labor component
 		componentData := models.AHSPLaborComponentUpdate{
+			LaborTypeId: laborTypeId,
 			Coefficient: coefficient,
 		}
 
