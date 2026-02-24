@@ -19,7 +19,7 @@ func (r *ProjectItemCostsRepo) FindById(tx *sql.Tx, projectItemCostId int) (mode
 		SELECT
 			cost_id, work_item_id, item_type, master_item_id, item_name,
 			coefficient, quantity_needed, unit_price_at_creation, total_cost,
-			created_at, updated_at
+			unit, created_at, updated_at
 		FROM project_item_costs
 		WHERE cost_id = ?
 	`
@@ -35,6 +35,7 @@ func (r *ProjectItemCostsRepo) FindById(tx *sql.Tx, projectItemCostId int) (mode
 		&cost.QuantityNeeded,
 		&cost.UnitPriceAtCreation,
 		&cost.TotalCost,
+		&cost.Unit,
 		&cost.CreatedAt,
 		&cost.UpdatedAt,
 	)
@@ -54,9 +55,10 @@ func (r *ProjectItemCostsRepo) FindByWorkItemId(tx *sql.Tx, workItemId int) ([]m
 			pic.coefficient, pic.quantity_needed, pic.unit_price_at_creation, pic.total_cost,
 			pic.created_at, pic.updated_at,
 			CASE
-				WHEN pic.item_type = 'MATERIAL' THEN mm.unit
-				WHEN pic.item_type = 'LABOR' THEN mlt.unit
-				ELSE ''
+				WHEN pic.master_item_id = 0 THEN pic.unit
+				WHEN pic.item_type = 'MATERIAL' THEN COALESCE(mm.unit, pic.unit)
+				WHEN pic.item_type = 'LABOR' THEN COALESCE(mlt.unit, pic.unit)
+				ELSE pic.unit
 			END as unit
 		FROM project_item_costs pic
 		LEFT JOIN master_materials mm ON pic.item_type = 'MATERIAL' AND pic.master_item_id = mm.material_id
@@ -106,9 +108,10 @@ func (r *ProjectItemCostsRepo) FindByProjectId(tx *sql.Tx, projectId int) ([]mod
 			pic.created_at, pic.updated_at,
 			pwi.description as work_item_description,
 			CASE
-				WHEN pic.item_type = 'MATERIAL' THEN mm.unit
-				WHEN pic.item_type = 'LABOR' THEN mlt.unit
-				ELSE ''
+				WHEN pic.master_item_id = 0 THEN pic.unit
+				WHEN pic.item_type = 'MATERIAL' THEN COALESCE(mm.unit, pic.unit)
+				WHEN pic.item_type = 'LABOR' THEN COALESCE(mlt.unit, pic.unit)
+				ELSE pic.unit
 			END as unit
 		FROM project_item_costs pic
 		JOIN project_work_items pwi ON pic.work_item_id = pwi.work_item_id
@@ -156,8 +159,8 @@ func (r *ProjectItemCostsRepo) Create(tx *sql.Tx, cost models.ProjectItemCostCre
 	query := `
 		INSERT INTO project_item_costs
 		(work_item_id, item_type, master_item_id, item_name, coefficient,
-		 quantity_needed, unit_price_at_creation, total_cost, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		 quantity_needed, unit, unit_price_at_creation, total_cost, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	now := time.Now().Format("2006-01-02 15:04:05")
@@ -169,6 +172,7 @@ func (r *ProjectItemCostsRepo) Create(tx *sql.Tx, cost models.ProjectItemCostCre
 		cost.ItemName,
 		cost.Coefficient,
 		cost.QuantityNeeded,
+		cost.Unit,
 		cost.UnitPriceAtCreation,
 		cost.TotalCost,
 		now,
@@ -190,8 +194,8 @@ func (r *ProjectItemCostsRepo) CreateMultiple(tx *sql.Tx, costs []models.Project
 		query := `
 			INSERT INTO project_item_costs
 			(work_item_id, item_type, master_item_id, item_name, coefficient,
-			 quantity_needed, unit_price_at_creation, total_cost, created_at, updated_at)
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			 quantity_needed, unit, unit_price_at_creation, total_cost, created_at, updated_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`
 
 		_, err := tx.Exec(
@@ -202,6 +206,7 @@ func (r *ProjectItemCostsRepo) CreateMultiple(tx *sql.Tx, costs []models.Project
 			cost.ItemName,
 			cost.Coefficient,
 			cost.QuantityNeeded,
+			cost.Unit,
 			cost.UnitPriceAtCreation,
 			cost.TotalCost,
 			now,

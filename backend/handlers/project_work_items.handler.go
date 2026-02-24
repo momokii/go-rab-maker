@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/a-h/templ"
@@ -825,15 +824,39 @@ func (h *ProjectWorkItemsHandler) calculateAndCreateCosts(tx *sql.Tx, templateId
 
 // processManualCostEntry processes manual cost entry from form data
 func (h *ProjectWorkItemsHandler) processManualCostEntry(tx *sql.Tx, c *fiber.Ctx, workItemId int, volume float64) error {
-	// Get manual material costs
-	materialNames := strings.Split(c.FormValue("manual_material_name[]"), ",")
-	materialQuantities := strings.Split(c.FormValue("manual_material_quantity[]"), ",")
-	materialPrices := strings.Split(c.FormValue("manual_material_price[]"), ",")
+	// Use PostArgs() for URL-encoded forms (default)
+	postArgs := c.Request().PostArgs()
 
-	// Get manual labor costs
-	laborNames := strings.Split(c.FormValue("manual_labor_name[]"), ",")
-	laborQuantities := strings.Split(c.FormValue("manual_labor_quantity[]"), ",")
-	laborPrices := strings.Split(c.FormValue("manual_labor_price[]"), ",")
+	// Helper to get all values for a key
+	getAllValues := func(key string) []string {
+		var values []string
+		postArgs.VisitAll(func(k, v []byte) {
+			if string(k) == key {
+				values = append(values, string(v))
+			}
+		})
+		return values
+	}
+
+	materialNames := getAllValues("manual_material_name[]")
+	materialQuantities := getAllValues("manual_material_quantity[]")
+	materialUnits := getAllValues("manual_material_unit[]")
+	materialPrices := getAllValues("manual_material_price[]")
+
+	laborNames := getAllValues("manual_labor_name[]")
+	laborQuantities := getAllValues("manual_labor_quantity[]")
+	laborUnits := getAllValues("manual_labor_unit[]")
+	laborPrices := getAllValues("manual_labor_price[]")
+
+	// Log for debugging
+	log.Printf("Extracted %d materials and %d labor types from form",
+		len(materialNames), len(laborNames))
+
+	// Validate we got data
+	if len(materialNames) == 0 && len(laborNames) == 0 {
+		return fmt.Errorf("no cost data provided - materials: %d, labor: %d",
+			len(materialNames), len(laborNames))
+	}
 
 	var costItems []models.ProjectItemCostCreate
 
@@ -855,6 +878,12 @@ func (h *ProjectWorkItemsHandler) processManualCostEntry(tx *sql.Tx, c *fiber.Ct
 
 		totalCost := quantity * price
 
+		// Get unit with bounds checking
+		unit := ""
+		if i < len(materialUnits) {
+			unit = materialUnits[i]
+		}
+
 		costItems = append(costItems, models.ProjectItemCostCreate{
 			WorkItemId:          workItemId,
 			ItemType:            string(models.PROJECT_ITEM_TYPE_MATERIAL),
@@ -862,12 +891,13 @@ func (h *ProjectWorkItemsHandler) processManualCostEntry(tx *sql.Tx, c *fiber.Ct
 			ItemName:            materialNames[i],
 			Coefficient:         quantity / volume, // Calculate coefficient based on volume
 			QuantityNeeded:      quantity,
+			Unit:                unit,
 			UnitPriceAtCreation: price,
 			TotalCost:           totalCost,
 		})
 
-		log.Printf("Added manual material: %s, Qty: %.2f, Price: %.2f, Total: %.2f",
-			materialNames[i], quantity, price, totalCost)
+		log.Printf("Added manual material: %s, Qty: %.2f %s, Price: %.2f, Total: %.2f",
+			materialNames[i], quantity, unit, price, totalCost)
 	}
 
 	// Process labor costs
@@ -888,6 +918,12 @@ func (h *ProjectWorkItemsHandler) processManualCostEntry(tx *sql.Tx, c *fiber.Ct
 
 		totalCost := quantity * price
 
+		// Get unit with bounds checking
+		unit := ""
+		if i < len(laborUnits) {
+			unit = laborUnits[i]
+		}
+
 		costItems = append(costItems, models.ProjectItemCostCreate{
 			WorkItemId:          workItemId,
 			ItemType:            string(models.PROJECT_ITEM_TYPE_LABOR),
@@ -895,12 +931,13 @@ func (h *ProjectWorkItemsHandler) processManualCostEntry(tx *sql.Tx, c *fiber.Ct
 			ItemName:            laborNames[i],
 			Coefficient:         quantity / volume, // Calculate coefficient based on volume
 			QuantityNeeded:      quantity,
+			Unit:                unit,
 			UnitPriceAtCreation: price,
 			TotalCost:           totalCost,
 		})
 
-		log.Printf("Added manual labor: %s, Qty: %.2f, Price: %.2f, Total: %.2f",
-			laborNames[i], quantity, price, totalCost)
+		log.Printf("Added manual labor: %s, Qty: %.2f %s, Price: %.2f, Total: %.2f",
+			laborNames[i], quantity, unit, price, totalCost)
 	}
 
 	// Create all cost items

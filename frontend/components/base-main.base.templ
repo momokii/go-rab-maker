@@ -153,6 +153,13 @@ templ Base(title string) {
             <script>
                 // Modal utility function
                 function closeModal() {
+                    // Close any open dialog elements properly
+                    const dialogs = document.querySelectorAll('dialog.modal-open');
+                    dialogs.forEach(dialog => {
+                        dialog.close();
+                    });
+
+                    // Also clear the modal container
                     const modalContainer = document.getElementById('htmx-modal-container');
                     if (modalContainer) {
                         modalContainer.innerHTML = '';

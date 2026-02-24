@@ -25,7 +25,7 @@ templ ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWi
 					hx-target="body"
 					hx-swap="outerHTML"
 					hx-on::after-request="if(event.detail.successful) closeModal()"
-					enctype="multipart/form-data">
+					hx-on::load="initializeManualCostFields()">
 					
 					<div class="mb-4">
 						<label class="block text-gray-700 text-sm font-bold mb-2" for="description">
@@ -107,7 +107,6 @@ templ ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWi
 
 					<!-- Manual Cost Entry Section -->
 					<div id="manual-cost-section" class="mb-4 border rounded p-4 bg-gray-50"
-						 hx-on::load="initializeManualCostFields()"
 						 style="display: none;">
 							<h4 class="text-md font-semibold mb-3 text-gray-800">Manual Cost Entry</h4>
 							
@@ -161,7 +160,7 @@ templ ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWi
 						<input type="hidden" name="work_item_id" value={ workItem.WorkItemId }>
 					}
 
-					<div class="flex justify-end space-x-2">
+					<div class="flex justify-end space-x-2" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
 						<button
 							type="button"
 							onclick="closeModalAndReset('project-work-item-form')"

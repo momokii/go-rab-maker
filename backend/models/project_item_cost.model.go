@@ -17,6 +17,7 @@ type ProjectItemCost struct {
 	QuantityNeeded      float64 `json:"quantity_needed"`
 	UnitPriceAtCreation float64 `json:"unit_price_at_creation"`
 	TotalCost           float64 `json:"total_cost"`
+	Unit                string  `json:"unit"`
 	CreatedAt           string  `json:"created_at"`
 	UpdatedAt           string  `json:"updated_at"`
 }
@@ -28,6 +29,7 @@ type ProjectItemCostCreate struct {
 	ItemName            string  `json:"item_name"`
 	Coefficient         float64 `json:"coefficient"`
 	QuantityNeeded      float64 `json:"quantity_needed" validate:"required,gt=0"`
+	Unit                string  `json:"unit"`
 	UnitPriceAtCreation float64 `json:"unit_price_at_creation" validate:"required,gt=0"`
 	TotalCost           float64 `json:"total_cost" validate:"required,gt=0"`
 }

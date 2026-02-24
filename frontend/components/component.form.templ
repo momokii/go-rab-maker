@@ -49,15 +49,17 @@ templ BaseFormModal(config ModalConfig) {
                 { children... }
 
                 if !config.HideSubmit {
-                    <div class="modal-action">
+                    <div class="modal-action flex justify-end gap-2" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                        <button type="button" class="btn btn-ghost"
+                                onclick={templ.JSFuncCall("closeModalAndReset", config.FormId)}>
+                            Cancel
+                        </button>
                         <button type="submit" class="btn btn-primary" hx-disabled-elt="this" hx-indicator="#htmx-loading">
                             <span>{config.SubmitLabel}</span>
                             <span class="htmx-indicator">
                                 <span class="loading loading-spinner text-primary"></span>
                             </span>
                         </button>
-                        <button type="button" class="btn"
-                                onclick={templ.JSFuncCall("closeModalAndReset", config.FormId)}>Cancel</button>
                     </div>
                 }
             </form>
@@ -80,8 +82,10 @@ templ ConfirmationDeleteModal(title string, message string, confirmAction string
         <div class="py-4">
             <p class="text-lg">{message}</p>
         </div>
-        <div class="modal-action">
-            <button type="button" class="btn" onclick="closeModal()">Cancel</button>
+        <div class="modal-action flex justify-end gap-2" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+            <button type="button" class="btn btn-ghost" onclick="closeModal()">
+                Cancel
+            </button>
             <button type="button"
                     class="btn btn-error"
                     hx-delete={confirmAction}
