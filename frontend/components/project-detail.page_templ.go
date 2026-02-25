@@ -231,46 +231,46 @@ func ProjectDetailPage(project models.Project, workItems []models.ProjectWorkIte
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\" hx-target=\"#htmx-modal-container\" hx-trigger=\"click\" class=\"text-red-600 hover:text-red-800\">Delete</button> <button hx-get=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\" hx-target=\"#htmx-modal-container\" hx-trigger=\"click\" class=\"text-red-600 hover:text-red-800\">Delete</button> <button data-work-item-id=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var16 string
-					templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs("/work-items/" + strconv.Itoa(workItem.WorkItemId) + "/costs")
+					templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(workItem.WorkItemId))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-detail.page.templ`, Line: 94, Col: 81}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-detail.page.templ`, Line: 94, Col: 64}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\" hx-target=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\" hx-get=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var17 string
-					templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("#costs-content-%d", workItem.WorkItemId))
+					templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs("/work-items/" + strconv.Itoa(workItem.WorkItemId) + "/costs")
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-detail.page.templ`, Line: 95, Col: 76}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-detail.page.templ`, Line: 95, Col: 81}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\" hx-trigger=\"click\" hx-swap=\"innerHTML\" hx-on--before-request=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\" hx-target=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var18 string
-					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("document.getElementById('costs-%d').classList.remove('hidden')", workItem.WorkItemId))
+					templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("#costs-content-%d", workItem.WorkItemId))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-detail.page.templ`, Line: 98, Col: 133}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-detail.page.templ`, Line: 96, Col: 76}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\" class=\"text-gray-600 hover:text-gray-800\">Show Costs</button></div></div><div id=\"")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\" hx-trigger=\"click\" hx-swap=\"innerHTML\" class=\"text-gray-600 hover:text-gray-800 toggle-costs-btn\">Show Costs</button></div></div><div id=\"")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -306,7 +306,7 @@ func ProjectDetailPage(project models.Project, workItems []models.ProjectWorkIte
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</div><!-- Material Summary Tab Content --><div id=\"material-summary\" class=\"tab-content hidden p-6\" style=\"display: none;\"><div id=\"material-summary-content\"><!-- Material summary will be loaded here --></div></div></div></div><!-- Modal Container --> <div id=\"htmx-modal-container\"></div><script>\n\t\t\t// Tab switching functionality\n\t\t\tdocument.addEventListener('DOMContentLoaded', function() {\n\t\t\t\tconst tabButtons = document.querySelectorAll('.tab-button');\n\t\t\t\tconst tabContents = document.querySelectorAll('.tab-content');\n\t\t\t\t\n\t\t\t\t// Function to switch tabs\n\t\t\t\tfunction switchTab(targetTab) {\n\t\t\t\t\t// Remove active state from all tabs\n\t\t\t\t\ttabButtons.forEach(btn => {\n\t\t\t\t\t\tbtn.classList.remove('active', 'border-blue-500', 'text-blue-600');\n\t\t\t\t\t\tbtn.classList.add('border-transparent', 'text-gray-500');\n\t\t\t\t\t});\n\n\t\t\t\t\t// Hide all tab contents using both class and style\n\t\t\t\t\ttabContents.forEach(content => {\n\t\t\t\t\t\tcontent.classList.add('hidden');\n\t\t\t\t\t\tcontent.style.display = 'none';\n\t\t\t\t\t});\n\n\t\t\t\t\t// Find and activate clicked tab\n\t\t\t\t\tconst activeTab = document.querySelector(`[data-tab=\"${targetTab}\"]`);\n\t\t\t\t\tif (activeTab) {\n\t\t\t\t\t\tactiveTab.classList.add('active', 'border-blue-500', 'text-blue-600');\n\t\t\t\t\t\tactiveTab.classList.remove('border-transparent', 'text-gray-500');\n\t\t\t\t\t}\n\n\t\t\t\t\t// Show corresponding content using both class and style\n\t\t\t\t\tconst targetContent = document.getElementById(targetTab);\n\t\t\t\t\tif (targetContent) {\n\t\t\t\t\t\ttargetContent.classList.remove('hidden');\n\t\t\t\t\t\ttargetContent.style.display = 'block';\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\t// Add click handlers to tab buttons (only for non-HTMX tabs)\n\t\t\t\ttabButtons.forEach(button => {\n\t\t\t\t\t// Skip if button has HTMX attributes\n\t\t\t\t\tif (button.hasAttribute('hx-get')) {\n\t\t\t\t\t\treturn;\n\t\t\t\t\t}\n\t\t\t\t\t\n\t\t\t\t\tbutton.addEventListener('click', function(e) {\n\t\t\t\t\t\te.preventDefault();\n\t\t\t\t\t\tconst targetTab = this.getAttribute('data-tab');\n\t\t\t\t\t\tswitchTab(targetTab);\n\t\t\t\t\t});\n\t\t\t\t});\n\t\t\t\t\n\t\t\t\t// Handle HTMX after request for material summary\n\t\t\t\tdocument.body.addEventListener('htmx:afterRequest', function(evt) {\n\t\t\t\t\tif (evt.detail.target.id === 'material-summary-content') {\n\t\t\t\t\t\t// Switch to material summary tab after content is loaded\n\t\t\t\t\t\tswitchTab('material-summary');\n\t\t\t\t\t}\n\t\t\t\t});\n\n\t\t\t\t// Initialize with BoQ tab visible\n\t\t\t\tswitchTab('boq');\n\t\t\t});\n\t\t\t\n\t\t</script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</div><!-- Material Summary Tab Content --><div id=\"material-summary\" class=\"tab-content hidden p-6\" style=\"display: none;\"><div id=\"material-summary-content\"><!-- Material summary will be loaded here --></div></div></div></div><!-- Modal Container --> <div id=\"htmx-modal-container\"></div><script>\n\t\t\t// Tab switching functionality\n\t\t\tdocument.addEventListener('DOMContentLoaded', function() {\n\t\t\t\tconst tabButtons = document.querySelectorAll('.tab-button');\n\t\t\t\tconst tabContents = document.querySelectorAll('.tab-content');\n\t\t\t\t\n\t\t\t\t// Function to switch tabs\n\t\t\t\tfunction switchTab(targetTab) {\n\t\t\t\t\t// Remove active state from all tabs\n\t\t\t\t\ttabButtons.forEach(btn => {\n\t\t\t\t\t\tbtn.classList.remove('active', 'border-blue-500', 'text-blue-600');\n\t\t\t\t\t\tbtn.classList.add('border-transparent', 'text-gray-500');\n\t\t\t\t\t});\n\n\t\t\t\t\t// Hide all tab contents using both class and style\n\t\t\t\t\ttabContents.forEach(content => {\n\t\t\t\t\t\tcontent.classList.add('hidden');\n\t\t\t\t\t\tcontent.style.display = 'none';\n\t\t\t\t\t});\n\n\t\t\t\t\t// Find and activate clicked tab\n\t\t\t\t\tconst activeTab = document.querySelector(`[data-tab=\"${targetTab}\"]`);\n\t\t\t\t\tif (activeTab) {\n\t\t\t\t\t\tactiveTab.classList.add('active', 'border-blue-500', 'text-blue-600');\n\t\t\t\t\t\tactiveTab.classList.remove('border-transparent', 'text-gray-500');\n\t\t\t\t\t}\n\n\t\t\t\t\t// Show corresponding content using both class and style\n\t\t\t\t\tconst targetContent = document.getElementById(targetTab);\n\t\t\t\t\tif (targetContent) {\n\t\t\t\t\t\ttargetContent.classList.remove('hidden');\n\t\t\t\t\t\ttargetContent.style.display = 'block';\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\t// Add click handlers to tab buttons (only for non-HTMX tabs)\n\t\t\t\ttabButtons.forEach(button => {\n\t\t\t\t\t// Skip if button has HTMX attributes\n\t\t\t\t\tif (button.hasAttribute('hx-get')) {\n\t\t\t\t\t\treturn;\n\t\t\t\t\t}\n\t\t\t\t\t\n\t\t\t\t\tbutton.addEventListener('click', function(e) {\n\t\t\t\t\t\te.preventDefault();\n\t\t\t\t\t\tconst targetTab = this.getAttribute('data-tab');\n\t\t\t\t\t\tswitchTab(targetTab);\n\t\t\t\t\t});\n\t\t\t\t});\n\t\t\t\t\n\t\t\t\t// Handle HTMX after request for material summary\n\t\t\t\tdocument.body.addEventListener('htmx:afterRequest', function(evt) {\n\t\t\t\t\tif (evt.detail.target.id === 'material-summary-content') {\n\t\t\t\t\t\t// Switch to material summary tab after content is loaded\n\t\t\t\t\t\tswitchTab('material-summary');\n\t\t\t\t\t}\n\t\t\t\t});\n\n\t\t\t\t// Toggle costs dropdown using event delegation\n\t\t\t\tdocument.addEventListener('click', function(event) {\n\t\t\t\t\tconst btn = event.target.closest('.toggle-costs-btn');\n\t\t\t\t\tif (btn) {\n\t\t\t\t\t\tconst workItemId = btn.getAttribute('data-work-item-id');\n\t\t\t\t\t\tconst costsElement = document.getElementById('costs-' + workItemId);\n\t\t\t\t\t\tif (costsElement && costsElement.classList.contains('hidden')) {\n\t\t\t\t\t\t\t// Dropdown is hidden - remove the class so HTMX can show it\n\t\t\t\t\t\t\tcostsElement.classList.remove('hidden');\n\t\t\t\t\t\t\t// Let HTMX handle the request to load costs\n\t\t\t\t\t\t} else {\n\t\t\t\t\t\t\t// Dropdown is visible - hide it and prevent HTMX request\n\t\t\t\t\t\t\tcostsElement.classList.add('hidden');\n\t\t\t\t\t\t\tevent.preventDefault();\n\t\t\t\t\t\t\tevent.stopPropagation();\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}, true); // Use capture phase to intercept before HTMX\n\n\t\t\t\t// Initialize with BoQ tab visible\n\t\t\t\tswitchTab('boq');\n\t\t\t});\n\n\t\t</script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

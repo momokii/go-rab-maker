@@ -89,7 +89,7 @@ func ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWit
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, " hx-target=\"body\" hx-swap=\"outerHTML\" hx-on::after-request=\"if(event.detail.successful) closeModal()\" hx-on::load=\"initializeManualCostFields()\"><div class=\"mb-4\"><label class=\"block text-gray-700 text-sm font-bold mb-2\" for=\"description\">Description</label> <input type=\"text\" id=\"description\" name=\"description\" class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, " hx-target=\"body\" hx-swap=\"outerHTML\" hx-on::after-request=\"if(event.detail.successful) closeModal()\" hx-on::after-settle=\"setTimeout(initializeManualCostFields, 100)\"><div class=\"mb-4\"><label class=\"block text-gray-700 text-sm font-bold mb-2\" for=\"description\">Description</label> <input type=\"text\" id=\"description\" name=\"description\" class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -301,7 +301,7 @@ func ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWit
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</span> <span class=\"htmx-indicator\"><span class=\"loading loading-spinner text-primary\"></span></span></button></div></form></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</span> <span class=\"htmx-indicator\"><span class=\"loading loading-spinner text-primary\"></span></span></button></div></form><script>\n\t\t\t\t\t(function() {\n\t\t\t\t\t\tconst select = document.getElementById('ahsp_template_id');\n\t\t\t\t\t\tconst section = document.getElementById('manual-cost-section');\n\t\t\t\t\t\tif (select && section && (!select.value || select.value === '')) {\n\t\t\t\t\t\t\tsection.style.display = 'block';\n\t\t\t\t\t\t}\n\t\t\t\t\t})();\n\t\t\t\t</script></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

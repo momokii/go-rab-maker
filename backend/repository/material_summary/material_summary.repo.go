@@ -17,35 +17,37 @@ func (r *MaterialSummaryRepo) GetAllMaterialsSummary(tx *sql.Tx, userId int) ([]
 	// Get materials
 	materialsQuery := `
 		SELECT
-			m.material_id as item_id,
-			m.material_name as item_name,
+			COALESCE(m.material_id, 0) as item_id,
+			pic.item_name,
 			SUM(pic.quantity_needed) as total_quantity,
-			m.unit,
+			COALESCE(m.unit, pic.unit) as unit,
 			'MATERIAL' as item_type,
 			SUM(pic.total_cost) as total_cost
 		FROM project_item_costs pic
-		JOIN master_materials m ON pic.master_item_id = m.material_id
+		LEFT JOIN master_materials m ON pic.master_item_id = m.material_id
 		JOIN project_work_items pwi ON pic.work_item_id = pwi.work_item_id
 		JOIN projects p ON pwi.project_id = p.project_id
 		WHERE p.user_id = ? AND pic.item_type = 'MATERIAL'
-		GROUP BY m.material_id, m.material_name, m.unit
+		GROUP BY pic.master_item_id, pic.item_name, COALESCE(m.unit, pic.unit)
+		ORDER BY pic.item_name
 	`
 
 	// Get labor
 	laborQuery := `
 		SELECT
-			lt.labor_type_id as item_id,
-			lt.role_name as item_name,
+			COALESCE(lt.labor_type_id, 0) as item_id,
+			pic.item_name,
 			SUM(pic.quantity_needed) as total_quantity,
-			lt.unit,
+			COALESCE(lt.unit, pic.unit) as unit,
 			'LABOR' as item_type,
 			SUM(pic.total_cost) as total_cost
 		FROM project_item_costs pic
-		JOIN master_labor_types lt ON pic.master_item_id = lt.labor_type_id
+		LEFT JOIN master_labor_types lt ON pic.master_item_id = lt.labor_type_id
 		JOIN project_work_items pwi ON pic.work_item_id = pwi.work_item_id
 		JOIN projects p ON pwi.project_id = p.project_id
 		WHERE p.user_id = ? AND pic.item_type = 'LABOR'
-		GROUP BY lt.labor_type_id, lt.role_name, lt.unit
+		GROUP BY pic.master_item_id, pic.item_name, COALESCE(lt.unit, pic.unit)
+		ORDER BY pic.item_name
 	`
 
 	// Execute materials query
@@ -101,33 +103,35 @@ func (r *MaterialSummaryRepo) GetProjectMaterialSummary(tx *sql.Tx, projectId in
 	// Get materials
 	materialsQuery := `
 		SELECT
-			m.material_id as item_id,
-			m.material_name as item_name,
+			COALESCE(m.material_id, 0) as item_id,
+			pic.item_name,
 			SUM(pic.quantity_needed) as total_quantity,
-			m.unit,
+			COALESCE(m.unit, pic.unit) as unit,
 			'MATERIAL' as item_type,
 			SUM(pic.total_cost) as total_cost
 		FROM project_item_costs pic
-		JOIN master_materials m ON pic.master_item_id = m.material_id
+		LEFT JOIN master_materials m ON pic.master_item_id = m.material_id
 		JOIN project_work_items pwi ON pic.work_item_id = pwi.work_item_id
 		WHERE pwi.project_id = ? AND pic.item_type = 'MATERIAL'
-		GROUP BY m.material_id, m.material_name, m.unit
+		GROUP BY pic.master_item_id, pic.item_name, COALESCE(m.unit, pic.unit)
+		ORDER BY pic.item_name
 	`
 
 	// Get labor
 	laborQuery := `
 		SELECT
-			lt.labor_type_id as item_id,
-			lt.role_name as item_name,
+			COALESCE(lt.labor_type_id, 0) as item_id,
+			pic.item_name,
 			SUM(pic.quantity_needed) as total_quantity,
-			lt.unit,
+			COALESCE(lt.unit, pic.unit) as unit,
 			'LABOR' as item_type,
 			SUM(pic.total_cost) as total_cost
 		FROM project_item_costs pic
-		JOIN master_labor_types lt ON pic.master_item_id = lt.labor_type_id
+		LEFT JOIN master_labor_types lt ON pic.master_item_id = lt.labor_type_id
 		JOIN project_work_items pwi ON pic.work_item_id = pwi.work_item_id
 		WHERE pwi.project_id = ? AND pic.item_type = 'LABOR'
-		GROUP BY lt.labor_type_id, lt.role_name, lt.unit
+		GROUP BY pic.master_item_id, pic.item_name, COALESCE(lt.unit, pic.unit)
+		ORDER BY pic.item_name
 	`
 
 	// Execute materials query

@@ -25,7 +25,7 @@ templ ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWi
 					hx-target="body"
 					hx-swap="outerHTML"
 					hx-on::after-request="if(event.detail.successful) closeModal()"
-					hx-on::load="initializeManualCostFields()">
+					hx-on::after-settle="setTimeout(initializeManualCostFields, 100)">
 					
 					<div class="mb-4">
 						<label class="block text-gray-700 text-sm font-bold mb-2" for="description">
@@ -185,6 +185,15 @@ templ ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWi
 						</button>
 					</div>
 				</form>
+				<script>
+					(function() {
+						const select = document.getElementById('ahsp_template_id');
+						const section = document.getElementById('manual-cost-section');
+						if (select && section && (!select.value || select.value === '')) {
+							section.style.display = 'block';
+						}
+					})();
+				</script>
 			</div>
 		</div>
 	</div>

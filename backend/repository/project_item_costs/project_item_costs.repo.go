@@ -235,9 +235,10 @@ func (r *ProjectItemCostsRepo) GetMaterialSummaryByProjectId(tx *sql.Tx, project
 			pic.master_item_id, pic.item_name,
 			SUM(pic.quantity_needed) as total_quantity,
 			CASE
-				WHEN pic.item_type = 'MATERIAL' THEN mm.unit
-				WHEN pic.item_type = 'LABOR' THEN mlt.unit
-				ELSE ''
+				WHEN pic.master_item_id = 0 THEN pic.unit
+				WHEN pic.item_type = 'MATERIAL' THEN COALESCE(mm.unit, pic.unit)
+				WHEN pic.item_type = 'LABOR' THEN COALESCE(mlt.unit, pic.unit)
+				ELSE pic.unit
 			END as unit,
 			pic.item_type,
 			SUM(pic.total_cost) as total_cost
@@ -248,9 +249,10 @@ func (r *ProjectItemCostsRepo) GetMaterialSummaryByProjectId(tx *sql.Tx, project
 		WHERE pwi.project_id = ?
 		GROUP BY pic.master_item_id, pic.item_name,
 		         CASE
-		             WHEN pic.item_type = 'MATERIAL' THEN mm.unit
-		             WHEN pic.item_type = 'LABOR' THEN mlt.unit
-		             ELSE ''
+		             WHEN pic.master_item_id = 0 THEN pic.unit
+		             WHEN pic.item_type = 'MATERIAL' THEN COALESCE(mm.unit, pic.unit)
+		             WHEN pic.item_type = 'LABOR' THEN COALESCE(mlt.unit, pic.unit)
+		             ELSE pic.unit
 		         END,
 		         pic.item_type
 		ORDER BY pic.item_type, pic.item_name
@@ -289,9 +291,10 @@ func (r *ProjectItemCostsRepo) GetDetailedMaterialSummaryByProjectId(tx *sql.Tx,
 		SELECT DISTINCT
 			pic.master_item_id, pic.item_name,
 			CASE
-				WHEN pic.item_type = 'MATERIAL' THEN mm.unit
-				WHEN pic.item_type = 'LABOR' THEN mlt.unit
-				ELSE ''
+				WHEN pic.master_item_id = 0 THEN pic.unit
+				WHEN pic.item_type = 'MATERIAL' THEN COALESCE(mm.unit, pic.unit)
+				WHEN pic.item_type = 'LABOR' THEN COALESCE(mlt.unit, pic.unit)
+				ELSE pic.unit
 			END as unit,
 			pic.item_type,
 			SUM(pic.total_cost) as total_cost,
@@ -303,9 +306,10 @@ func (r *ProjectItemCostsRepo) GetDetailedMaterialSummaryByProjectId(tx *sql.Tx,
 		WHERE pwi.project_id = ?
 		GROUP BY pic.master_item_id, pic.item_name,
 		         CASE
-		             WHEN pic.item_type = 'MATERIAL' THEN mm.unit
-		             WHEN pic.item_type = 'LABOR' THEN mlt.unit
-		             ELSE ''
+		             WHEN pic.master_item_id = 0 THEN pic.unit
+		             WHEN pic.item_type = 'MATERIAL' THEN COALESCE(mm.unit, pic.unit)
+		             WHEN pic.item_type = 'LABOR' THEN COALESCE(mlt.unit, pic.unit)
+		             ELSE pic.unit
 		         END,
 		         pic.item_type
 		ORDER BY pic.item_type, pic.item_name

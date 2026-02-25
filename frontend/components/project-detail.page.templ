@@ -91,12 +91,12 @@ templ ProjectDetailPage(project models.Project, workItems []models.ProjectWorkIt
 												Delete
 											</button>
 											<button
+												data-work-item-id={strconv.Itoa(workItem.WorkItemId)}
 												hx-get={"/work-items/" + strconv.Itoa(workItem.WorkItemId) + "/costs"}
 												hx-target={fmt.Sprintf("#costs-content-%d", workItem.WorkItemId)}
 												hx-trigger="click"
 												hx-swap="innerHTML"
-												hx-on--before-request={fmt.Sprintf("document.getElementById('costs-%d').classList.remove('hidden')", workItem.WorkItemId)}
-												class="text-gray-600 hover:text-gray-800">
+												class="text-gray-600 hover:text-gray-800 toggle-costs-btn">
 												Show Costs
 											</button>
 										</div>
@@ -182,10 +182,29 @@ templ ProjectDetailPage(project models.Project, workItems []models.ProjectWorkIt
 					}
 				});
 
+				// Toggle costs dropdown using event delegation
+				document.addEventListener('click', function(event) {
+					const btn = event.target.closest('.toggle-costs-btn');
+					if (btn) {
+						const workItemId = btn.getAttribute('data-work-item-id');
+						const costsElement = document.getElementById('costs-' + workItemId);
+						if (costsElement && costsElement.classList.contains('hidden')) {
+							// Dropdown is hidden - remove the class so HTMX can show it
+							costsElement.classList.remove('hidden');
+							// Let HTMX handle the request to load costs
+						} else {
+							// Dropdown is visible - hide it and prevent HTMX request
+							costsElement.classList.add('hidden');
+							event.preventDefault();
+							event.stopPropagation();
+						}
+					}
+				}, true); // Use capture phase to intercept before HTMX
+
 				// Initialize with BoQ tab visible
 				switchTab('boq');
 			});
-			
+
 		</script>
 	}
 }
