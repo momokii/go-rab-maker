@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -112,7 +111,7 @@ func (h *ProjectWorkItemsHandler) ProjectDetailPage(c *fiber.Ctx) error {
 		return utils.ResponseErrorModal(c, "Error", "Failed to fetch project details")
 	}
 
-	log.Println(fmt.Sprintf("Project %d has %d work items", projectId, len(workItems)))
+
 
 	// Render the project detail page
 	projectDetailComponent := components.ProjectDetailPage(project, workItems, totalCost)
@@ -513,24 +512,24 @@ func (h *ProjectWorkItemsHandler) CreateProjectWorkItem(c *fiber.Ctx) error {
 		// Create work item and get the ID
 		newWorkItemId, err := h.projectWorkItemsRepo.Create(tx, workItemData)
 		if err != nil {
-			log.Printf("Error creating work item: %v", err)
+
 			return fiber.StatusInternalServerError, err
 		}
 
-		log.Printf("Successfully created work item with ID %d", newWorkItemId)
+
 
 		// If AHSP template is selected, calculate and create cost items
 		if ahspTemplateId != nil {
-			log.Printf("Calculating costs for template ID %d, work item ID %d", *ahspTemplateId, newWorkItemId)
+
 			if err := h.calculateAndCreateCosts(tx, *ahspTemplateId, volume, newWorkItemId); err != nil {
-				log.Printf("Error calculating costs: %v", err)
+
 				return fiber.StatusInternalServerError, fmt.Errorf("cost calculation failed: %w", err)
 			}
 		} else {
 			// Handle manual cost entry
-			log.Printf("Processing manual cost entry for work item ID %d", newWorkItemId)
+
 			if err := h.processManualCostEntry(tx, c, newWorkItemId, volume); err != nil {
-				log.Printf("Error processing manual cost entry: %v", err)
+
 				return fiber.StatusInternalServerError, fmt.Errorf("manual cost entry failed: %w", err)
 			}
 		}
@@ -658,14 +657,14 @@ func (h *ProjectWorkItemsHandler) UpdateProjectWorkItem(c *fiber.Ctx) error {
 		// If AHSP template is selected, recalculate and create cost items
 		if ahspTemplateId != nil {
 			if err := h.calculateAndCreateCosts(tx, *ahspTemplateId, volume, workItemId); err != nil {
-				log.Printf("Error recalculating costs: %v", err)
+
 				return fiber.StatusInternalServerError, fmt.Errorf("cost recalculation failed: %w", err)
 			}
 		} else {
 			// Handle manual cost entry for updates
-			log.Printf("Processing manual cost entry for updated work item ID %d", workItemId)
+
 			if err := h.processManualCostEntry(tx, c, workItemId, volume); err != nil {
-				log.Printf("Error processing manual cost entry: %v", err)
+
 				return fiber.StatusInternalServerError, fmt.Errorf("manual cost entry failed: %w", err)
 			}
 		}
@@ -729,17 +728,17 @@ func (h *ProjectWorkItemsHandler) DeleteProjectWorkItem(c *fiber.Ctx) error {
 
 		// First, explicitly delete all associated cost calculations
 		if err := h.projectItemCostsRepo.DeleteByWorkItemId(tx, workItemId); err != nil {
-			log.Printf("Error deleting cost items for work item %d: %v", workItemId, err)
+
 			return fiber.StatusInternalServerError, err
 		}
 
 		// Then delete the work item
 		if err := h.projectWorkItemsRepo.Delete(tx, existingWorkItem); err != nil {
-			log.Printf("Error deleting work item %d: %v", workItemId, err)
+
 			return fiber.StatusInternalServerError, err
 		}
 
-		log.Printf("Successfully deleted work item %d and its cost calculations", workItemId)
+
 
 		return fiber.StatusOK, nil
 	}); err != nil {
@@ -752,42 +751,40 @@ func (h *ProjectWorkItemsHandler) DeleteProjectWorkItem(c *fiber.Ctx) error {
 
 // calculateAndCreateCosts calculates and creates cost items based on AHSP template
 func (h *ProjectWorkItemsHandler) calculateAndCreateCosts(tx *sql.Tx, templateId int, volume float64, workItemId int) error {
-	log.Printf("Starting cost calculation for template ID %d, volume %.2f, work item ID %d", templateId, volume, workItemId)
+
 
 	// Get material components for the template
 	materialComponents, err := h.ahspMaterialComponentsRepo.FindByTemplateId(tx, templateId)
 	if err != nil {
-		log.Printf("Error fetching material components for template %d: %v", templateId, err)
+
 		return err
 	}
-	log.Printf("Found %d material components for template %d", len(materialComponents), templateId)
+
 
 	// Get labor components for the template
 	laborComponents, err := h.ahspLaborComponentsRepo.FindByTemplateId(tx, templateId)
 	if err != nil {
-		log.Printf("Error fetching labor components for template %d: %v", templateId, err)
+
 		return err
 	}
-	log.Printf("Found %d labor components for template %d", len(laborComponents), templateId)
+
 
 	var costItems []models.ProjectItemCostCreate
 
 	// Process material components
-	for i, component := range materialComponents {
-		log.Printf("Processing material component %d: MaterialID %d, Coefficient %.4f", i+1, component.MaterialId, component.Coefficient)
+	for _, component := range materialComponents {
+
 
 		// Get material details
 		material, err := h.masterMaterialsRepo.FindById(tx, component.MaterialId)
 		if err != nil {
-			log.Printf("Warning: Material with ID %d not found, skipping: %v", component.MaterialId, err)
+
 			continue // Skip if material not found
 		}
 
 		quantityNeeded := component.Coefficient * volume
 		totalCost := quantityNeeded * material.DefaultUnitPrice
 
-		log.Printf("Material cost calculation - Quantity: %.4f, Unit Price: %.2f, Total: %.2f",
-			quantityNeeded, material.DefaultUnitPrice, totalCost)
 
 		costItems = append(costItems, models.ProjectItemCostCreate{
 			WorkItemId:          workItemId,
@@ -802,21 +799,19 @@ func (h *ProjectWorkItemsHandler) calculateAndCreateCosts(tx *sql.Tx, templateId
 	}
 
 	// Process labor components
-	for i, component := range laborComponents {
-		log.Printf("Processing labor component %d: LaborTypeID %d, Coefficient %.4f", i+1, component.LaborTypeId, component.Coefficient)
+	for _, component := range laborComponents {
+
 
 		// Get labor type details
 		laborType, err := h.masterLaborTypesRepo.FindById(tx, component.LaborTypeId)
 		if err != nil {
-			log.Printf("Warning: Labor type with ID %d not found, skipping: %v", component.LaborTypeId, err)
+
 			continue // Skip if labor type not found
 		}
 
 		quantityNeeded := component.Coefficient * volume
 		totalCost := quantityNeeded * laborType.DefaultDailyWage
 
-		log.Printf("Labor cost calculation - Quantity: %.4f, Daily Wage: %.2f, Total: %.2f",
-			quantityNeeded, laborType.DefaultDailyWage, totalCost)
 
 		costItems = append(costItems, models.ProjectItemCostCreate{
 			WorkItemId:          workItemId,
@@ -832,14 +827,14 @@ func (h *ProjectWorkItemsHandler) calculateAndCreateCosts(tx *sql.Tx, templateId
 
 	// Create all cost items
 	if len(costItems) > 0 {
-		log.Printf("Creating %d cost items for work item %d", len(costItems), workItemId)
+
 		if err := h.projectItemCostsRepo.CreateMultiple(tx, costItems); err != nil {
-			log.Printf("Error creating cost items: %v", err)
+
 			return err
 		}
-		log.Printf("Successfully created %d cost items", len(costItems))
+
 	} else {
-		log.Printf("No cost items to create for work item %d", workItemId)
+
 	}
 
 	return nil
@@ -872,8 +867,6 @@ func (h *ProjectWorkItemsHandler) processManualCostEntry(tx *sql.Tx, c *fiber.Ct
 	laborPrices := getAllValues("manual_labor_price[]")
 
 	// Log for debugging
-	log.Printf("Extracted %d materials and %d labor types from form",
-		len(materialNames), len(laborNames))
 
 	// Validate we got data
 	if len(materialNames) == 0 && len(laborNames) == 0 {
@@ -919,8 +912,6 @@ func (h *ProjectWorkItemsHandler) processManualCostEntry(tx *sql.Tx, c *fiber.Ct
 			TotalCost:           totalCost,
 		})
 
-		log.Printf("Added manual material: %s, Qty: %.2f %s, Price: %.2f, Total: %.2f",
-			materialNames[i], quantity, unit, price, totalCost)
 	}
 
 	// Process labor costs
@@ -959,20 +950,18 @@ func (h *ProjectWorkItemsHandler) processManualCostEntry(tx *sql.Tx, c *fiber.Ct
 			TotalCost:           totalCost,
 		})
 
-		log.Printf("Added manual labor: %s, Qty: %.2f %s, Price: %.2f, Total: %.2f",
-			laborNames[i], quantity, unit, price, totalCost)
 	}
 
 	// Create all cost items
 	if len(costItems) > 0 {
-		log.Printf("Creating %d manual cost items for work item %d", len(costItems), workItemId)
+
 		if err := h.projectItemCostsRepo.CreateMultiple(tx, costItems); err != nil {
-			log.Printf("Error creating manual cost items: %v", err)
+
 			return err
 		}
-		log.Printf("Successfully created %d manual cost items", len(costItems))
+
 	} else {
-		log.Printf("No manual cost items to create for work item %d", workItemId)
+
 	}
 
 	return nil

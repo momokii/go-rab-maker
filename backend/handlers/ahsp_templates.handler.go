@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"database/sql"
-	"log"
 	"strconv"
 	"time"
 
@@ -52,7 +51,6 @@ func (h *AhspTemplateHandler) AhspTemplatesMainPageTableView(c *fiber.Ctx) error
 
 	// Get user from session (using the same approach as in auth.handler.go)
 	userData := c.Locals(middlewares.SESSION_USER_NAME).(models.SessionUser)
-	log.Println(userData)
 
 	// start transaction to get the data
 	if _, err := h.dbService.Transaction(

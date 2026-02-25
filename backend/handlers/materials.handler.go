@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"database/sql"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -53,7 +52,6 @@ func (h *MaterialHandler) MaterialsMainPageTableView(c *fiber.Ctx) error {
 
 	// Get user from session (using the same approach as in auth.handler.go)
 	userData := c.Locals(middlewares.SESSION_USER_NAME).(models.SessionUser)
-	log.Println(userData)
 
 	// start transaction to get the data
 	if _, err := h.dbService.Transaction(
@@ -365,9 +363,6 @@ func (h *MaterialHandler) DeleteMaterial(c *fiber.Ctx) error {
 		}
 		return fiber.StatusOK, nil
 	}); err != nil {
-		// Log the actual error for debugging
-		log.Printf("Delete material error: %v", err)
-
 		// Check for foreign key constraint error (case-insensitive)
 		errLower := strings.ToLower(err.Error())
 		if strings.Contains(errLower, "foreign key") ||

@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/a-h/templ"
@@ -52,7 +51,6 @@ func (h *MaterialSummaryHandler) MaterialSummary(c *fiber.Ctx) error {
 		// Get material summary data
 		materialSummariesData, err := h.materialSummaryRepo.GetAllMaterialsSummary(tx, userData.ID)
 		if err != nil {
-			log.Printf("Error fetching material summary: %v", err)
 			materialSummaries = []models.MaterialSummary{}
 		} else {
 			materialSummaries = materialSummariesData
@@ -85,7 +83,6 @@ func (h *MaterialSummaryHandler) ExportMaterialSummary(c *fiber.Ctx) error {
 		// Get material summary data
 		materialSummaries, err := h.materialSummaryRepo.GetAllMaterialsSummary(tx, userData.ID)
 		if err != nil {
-			log.Printf("Error fetching material summary: %v", err)
 			return fiber.StatusInternalServerError, err
 		}
 
@@ -202,11 +199,9 @@ func (h *MaterialSummaryHandler) ProjectMaterialSummary(c *fiber.Ctx) error {
 		// Get detailed material summary data for the specific project
 		detailedSummaries, err := h.projectItemCostsRepo.GetDetailedMaterialSummaryByProjectId(tx, projectId)
 		if err != nil {
-			log.Printf("Error fetching detailed project material summary: %v", err)
 			// Fallback to regular summary if detailed fails
 			materialSummariesData, err := h.materialSummaryRepo.GetProjectMaterialSummary(tx, projectId)
 			if err != nil {
-				log.Printf("Error fetching project material summary: %v", err)
 				materialSummaries = []models.MaterialSummary{}
 			} else {
 				materialSummaries = materialSummariesData
@@ -273,7 +268,6 @@ func (h *MaterialSummaryHandler) ExportProjectMaterialSummary(c *fiber.Ctx) erro
 		// Get material summary data for the specific project
 		materialSummaries, err := h.materialSummaryRepo.GetProjectMaterialSummary(tx, projectId)
 		if err != nil {
-			log.Printf("Error fetching project material summary: %v", err)
 			return fiber.StatusInternalServerError, err
 		}
 

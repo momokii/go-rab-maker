@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"database/sql"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -366,9 +365,6 @@ func (h *LaborTypeHandler) DeleteLaborType(c *fiber.Ctx) error {
 		}
 		return fiber.StatusOK, nil
 	}); err != nil {
-		// Log the actual error for debugging
-		log.Printf("Delete labor type error: %v", err)
-
 		// Check for foreign key constraint error (case-insensitive)
 		errLower := strings.ToLower(err.Error())
 		if strings.Contains(errLower, "foreign key") ||

@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"log"
 	"os"
 	"time"
 
@@ -40,8 +39,6 @@ func NewSessionMiddleware() *SessionMiddleware {
 		// CookieName:     SESSION_APP_COOKIE_ID, // not using CookiNaame because we set it in KeyLookup and Cookiname is deprecated in latest fiber version
 		KeyLookup: "cookie:" + SESSION_APP_COOKIE_ID,
 	})
-
-	log.Println("Session store initialized (production mode: ", isProduction, ")")
 
 	return &SessionMiddleware{}
 }

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/a-h/templ"
 	"github.com/gofiber/fiber/v2"
@@ -48,7 +47,6 @@ func (h *DashboardHandler) Dashboard(c *fiber.Ctx) error {
 		// Get recent projects for the user
 		projectsData, err := h.dashboardRepo.GetRecentProjects(tx, userData.ID, 10)
 		if err != nil {
-			log.Printf("Error fetching projects: %v", err)
 			projects = []models.Project{}
 		} else {
 			projects = projectsData
@@ -57,7 +55,6 @@ func (h *DashboardHandler) Dashboard(c *fiber.Ctx) error {
 		// Get total projects count
 		totalProjectsData, err := h.dashboardRepo.GetProjectCount(tx, userData.ID)
 		if err != nil {
-			log.Printf("Error getting project count: %v", err)
 			totalProjects = 0
 		} else {
 			totalProjects = totalProjectsData
@@ -66,7 +63,6 @@ func (h *DashboardHandler) Dashboard(c *fiber.Ctx) error {
 		// Get total cost of all projects
 		totalCostData, err := h.dashboardRepo.GetProjectsTotalCost(tx, userData.ID)
 		if err != nil {
-			log.Printf("Error getting total cost: %v", err)
 			totalCost = 0
 		} else {
 			totalCost = totalCostData
