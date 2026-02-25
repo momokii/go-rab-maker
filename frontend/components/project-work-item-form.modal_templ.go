@@ -12,7 +12,7 @@ import "strconv"
 import "fmt"
 import "github.com/momokii/go-rab-maker/backend/models"
 
-func ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWithDetails, categories []models.MasterWorkCategory, templates []models.AHSPTemplate, isEdit bool) templ.Component {
+func ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWithDetails, categories []models.MasterWorkCategory, templates []models.AHSPTemplate, isEdit bool, existingManualMaterials []models.ProjectItemCostWithDetails, existingManualLabor []models.ProjectItemCostWithDetails) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -250,58 +250,186 @@ func ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWit
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</select></div><!-- Manual Cost Entry Section --><div id=\"manual-cost-section\" class=\"mb-4 border rounded p-4 bg-gray-50\" style=\"display: none;\"><h4 class=\"text-md font-semibold mb-3 text-gray-800\">Manual Cost Entry</h4><div class=\"mb-3\"><label class=\"block text-gray-700 text-sm font-bold mb-2\">Material Costs</label><div id=\"manual-materials\" class=\"space-y-2\"><div class=\"manual-material-row flex gap-2\"><input type=\"text\" name=\"manual_material_name[]\" placeholder=\"Material name\" class=\"flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_material_quantity[]\" placeholder=\"Qty\" step=\"0.01\" class=\"w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"text\" name=\"manual_material_unit[]\" placeholder=\"Unit\" class=\"w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_material_price[]\" placeholder=\"Price\" step=\"0.01\" class=\"w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <button type=\"button\" onclick=\"addManualMaterialRow()\" class=\"bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline\">+</button></div></div></div><div class=\"mb-3\"><label class=\"block text-gray-700 text-sm font-bold mb-2\">Labor Costs</label><div id=\"manual-labor\" class=\"space-y-2\"><div class=\"manual-labor-row flex gap-2\"><input type=\"text\" name=\"manual_labor_name[]\" placeholder=\"Labor type\" class=\"flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_labor_quantity[]\" placeholder=\"Qty\" step=\"0.01\" class=\"w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"text\" name=\"manual_labor_unit[]\" placeholder=\"Unit\" class=\"w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_labor_price[]\" placeholder=\"Price\" step=\"0.01\" class=\"w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <button type=\"button\" onclick=\"addManualLaborRow()\" class=\"bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline\">+</button></div></div></div></div><input type=\"hidden\" name=\"project_id\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</select></div><!-- Manual Cost Entry Section --><div id=\"manual-cost-section\" class=\"mb-4 border rounded p-4 bg-gray-50\" style=\"display: none;\"><h4 class=\"text-md font-semibold mb-3 text-gray-800\">Manual Cost Entry</h4><div class=\"mb-3\"><label class=\"block text-gray-700 text-sm font-bold mb-2\">Material Costs</label><div id=\"manual-materials\" class=\"space-y-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var11 string
-		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(projectId)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 158, Col: 61}
+		if isEdit && len(existingManualMaterials) > 0 {
+			for _, cost := range existingManualMaterials {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<div class=\"manual-material-row flex gap-2\"><input type=\"text\" name=\"manual_material_name[]\" value=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var11 string
+				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(cost.ItemName)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 121, Col: 82}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\" class=\"flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_material_quantity[]\" value=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var12 string
+				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", cost.Coefficient))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 123, Col: 112}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\" step=\"0.01\" class=\"w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"text\" name=\"manual_material_unit[]\" value=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var13 string
+				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(cost.Unit)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 125, Col: 78}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "\" class=\"w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_material_price[]\" value=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var14 string
+				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", cost.UnitPriceAtCreation))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 127, Col: 117}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "\" step=\"0.01\" class=\"w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <button type=\"button\" onclick=\"removeManualMaterialRow(this)\" class=\"bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline\">-</button></div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "<div class=\"manual-material-row flex gap-2\"><input type=\"text\" name=\"manual_material_name[]\" placeholder=\"Material name\" class=\"flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_material_quantity[]\" placeholder=\"Qty\" step=\"0.01\" class=\"w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"text\" name=\"manual_material_unit[]\" placeholder=\"Unit\" class=\"w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_material_price[]\" placeholder=\"Price\" step=\"0.01\" class=\"w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <button type=\"button\" onclick=\"addManualMaterialRow()\" class=\"bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline\">+</button></div></div></div><div class=\"mb-3\"><label class=\"block text-gray-700 text-sm font-bold mb-2\">Labor Costs</label><div id=\"manual-labor\" class=\"space-y-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "\"> ")
+		if isEdit && len(existingManualLabor) > 0 {
+			for _, cost := range existingManualLabor {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "<div class=\"manual-labor-row flex gap-2\"><input type=\"text\" name=\"manual_labor_name[]\" value=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var15 string
+				templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(cost.ItemName)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 161, Col: 79}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "\" class=\"flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_labor_quantity[]\" value=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var16 string
+				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", cost.Coefficient))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 163, Col: 109}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "\" step=\"0.01\" class=\"w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"text\" name=\"manual_labor_unit[]\" value=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var17 string
+				templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(cost.Unit)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 165, Col: 75}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "\" class=\"w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_labor_price[]\" value=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var18 string
+				templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", cost.UnitPriceAtCreation))
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 167, Col: 114}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "\" step=\"0.01\" class=\"w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <button type=\"button\" onclick=\"removeManualLaborRow(this)\" class=\"bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline\">-</button></div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<div class=\"manual-labor-row flex gap-2\"><input type=\"text\" name=\"manual_labor_name[]\" placeholder=\"Labor type\" class=\"flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_labor_quantity[]\" placeholder=\"Qty\" step=\"0.01\" class=\"w-20 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"text\" name=\"manual_labor_unit[]\" placeholder=\"Unit\" class=\"w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <input type=\"number\" name=\"manual_labor_price[]\" placeholder=\"Price\" step=\"0.01\" class=\"w-24 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline\"> <button type=\"button\" onclick=\"addManualLaborRow()\" class=\"bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline\">+</button></div></div></div></div><input type=\"hidden\" name=\"project_id\" value=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var19 string
+		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(projectId)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 194, Col: 61}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "\"> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if isEdit {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "<input type=\"hidden\" name=\"work_item_id\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 44, "<input type=\"hidden\" name=\"work_item_id\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var12 string
-			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(workItem.WorkItemId)
+			var templ_7745c5c3_Var20 string
+			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(workItem.WorkItemId)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 160, Col: 74}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-work-item-form.modal.templ`, Line: 196, Col: 74}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 45, "\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "<div class=\"flex justify-end space-x-2\" style=\"display: flex; justify-content: flex-end; gap: 0.5rem;\"><button type=\"button\" onclick=\"closeModalAndReset('project-work-item-form')\" class=\"bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\">Cancel</button> <button type=\"submit\" class=\"bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\" hx-disabled-elt=\"this\" hx-indicator=\"#htmx-loading\"><span class=\"btn-text\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "<div class=\"flex justify-end space-x-2\" style=\"display: flex; justify-content: flex-end; gap: 0.5rem;\"><button type=\"button\" onclick=\"closeModalAndReset('project-work-item-form')\" class=\"bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\">Cancel</button> <button type=\"submit\" class=\"bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline\" hx-disabled-elt=\"this\" hx-indicator=\"#htmx-loading\"><span class=\"btn-text\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if isEdit {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "Update")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 47, "Update")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "Add")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 48, "Add")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</span> <span class=\"htmx-indicator\"><span class=\"loading loading-spinner text-primary\"></span></span></button></div></form><script>\n\t\t\t\t\t(function() {\n\t\t\t\t\t\tconst select = document.getElementById('ahsp_template_id');\n\t\t\t\t\t\tconst section = document.getElementById('manual-cost-section');\n\t\t\t\t\t\tif (select && section && (!select.value || select.value === '')) {\n\t\t\t\t\t\t\tsection.style.display = 'block';\n\t\t\t\t\t\t}\n\t\t\t\t\t})();\n\t\t\t\t</script></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</span> <span class=\"htmx-indicator\"><span class=\"loading loading-spinner text-primary\"></span></span></button></div></form><script>\n\t\t\t\t\t(function() {\n\t\t\t\t\t\tconst select = document.getElementById('ahsp_template_id');\n\t\t\t\t\t\tconst section = document.getElementById('manual-cost-section');\n\t\t\t\t\t\tif (select && section && (!select.value || select.value === '')) {\n\t\t\t\t\t\t\tsection.style.display = 'block';\n\t\t\t\t\t\t}\n\t\t\t\t\t})();\n\t\t\t\t</script></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

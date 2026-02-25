@@ -182,6 +182,8 @@ func (h *ProjectWorkItemsHandler) ProjectWorkItemCreateModalView(c *fiber.Ctx) e
 		categories,
 		templates,
 		false, // Not edit mode
+		nil, // No existing materials for create
+		nil, // No existing labor for create
 	)
 
 	return adaptor.HTTPHandler(templ.Handler(modal))(c)
@@ -209,6 +211,7 @@ func (h *ProjectWorkItemsHandler) ProjectWorkItemEditModalView(c *fiber.Ctx) err
 	var workItem models.ProjectWorkItem
 	var categories []models.MasterWorkCategory
 	var templates []models.AHSPTemplate
+	var allCosts []models.ProjectItemCostWithDetails
 
 	// Fetch required data
 	if _, err := h.dbService.Transaction(c.Context(), func(tx *sql.Tx) (int, error) {
@@ -239,6 +242,12 @@ func (h *ProjectWorkItemsHandler) ProjectWorkItemEditModalView(c *fiber.Ctx) err
 		// Check if work item belongs to the project
 		if workItem.ProjectId != projectId {
 			return fiber.StatusForbidden, fiber.NewError(fiber.StatusForbidden, "Access denied")
+		}
+
+		// Fetch existing costs for this work item
+		allCosts, err = h.projectItemCostsRepo.FindByWorkItemId(tx, workItemId)
+		if err != nil {
+			return fiber.StatusInternalServerError, err
 		}
 
 		// Get work categories
@@ -276,12 +285,26 @@ func (h *ProjectWorkItemsHandler) ProjectWorkItemEditModalView(c *fiber.Ctx) err
 		UpdatedAt:      workItem.UpdatedAt,
 	}
 
+	// Filter costs into manual materials and labor (ItemId == 0 indicates manual entry)
+	var existingManualMaterials, existingManualLabor []models.ProjectItemCostWithDetails
+	for _, cost := range allCosts {
+		if cost.ItemId == 0 { // Manual entry (not from master items)
+			if cost.ItemType == "MATERIAL" {
+				existingManualMaterials = append(existingManualMaterials, cost)
+			} else if cost.ItemType == "LABOR" {
+				existingManualLabor = append(existingManualLabor, cost)
+			}
+		}
+	}
+
 	modal := components.ProjectWorkItemFormModal(
 		projectId,
 		&workItemWithDetails,
 		categories,
 		templates,
 		true, // Edit mode
+		existingManualMaterials,
+		existingManualLabor,
 	)
 
 	return adaptor.HTTPHandler(templ.Handler(modal))(c)
