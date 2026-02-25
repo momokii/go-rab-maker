@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -365,13 +366,17 @@ func (h *LaborTypeHandler) DeleteLaborType(c *fiber.Ctx) error {
 		}
 		return fiber.StatusOK, nil
 	}); err != nil {
-		// Check for foreign key constraint error
-		if strings.Contains(err.Error(), "FOREIGN KEY constraint failed") ||
-			strings.Contains(err.Error(), "constraint failed") {
+		// Log the actual error for debugging
+		log.Printf("Delete labor type error: %v", err)
+
+		// Check for foreign key constraint error (case-insensitive)
+		errLower := strings.ToLower(err.Error())
+		if strings.Contains(errLower, "foreign key") ||
+			strings.Contains(errLower, "constraint") {
 			return utils.ResponseErrorModal(c, "Cannot Delete",
 				"Cannot delete this labor type because it is used in AHSP templates")
 		}
-		return utils.ResponseErrorModal(c, "Error", "Failed to delete labor type")
+		return utils.ResponseErrorModal(c, "Error", "Failed to delete labor type: "+err.Error())
 	}
 
 	// refresh table

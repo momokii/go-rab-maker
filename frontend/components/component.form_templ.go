@@ -191,7 +191,7 @@ func BaseFormModal(config ModalConfig) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</span> <span class=\"htmx-indicator\"><span class=\"loading loading-spinner text-primary\"></span></span></button></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</span> <span class=\"htmx-indicator\" style=\"display: none;\"><span class=\"loading loading-spinner text-primary\"></span></span></button></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

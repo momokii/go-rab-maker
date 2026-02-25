@@ -429,7 +429,7 @@ func ProjectWorkItemFormModal(projectId int, workItem *models.ProjectWorkItemWit
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</span> <span class=\"htmx-indicator\"><span class=\"loading loading-spinner text-primary\"></span></span></button></div></form><script>\n\t\t\t\t\t(function() {\n\t\t\t\t\t\tconst select = document.getElementById('ahsp_template_id');\n\t\t\t\t\t\tconst section = document.getElementById('manual-cost-section');\n\t\t\t\t\t\tif (select && section && (!select.value || select.value === '')) {\n\t\t\t\t\t\t\tsection.style.display = 'block';\n\t\t\t\t\t\t}\n\t\t\t\t\t})();\n\t\t\t\t</script></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 49, "</span> <span class=\"htmx-indicator\" style=\"display: none;\"><span class=\"loading loading-spinner text-primary\"></span></span></button></div></form><script>\n\t\t\t\t\t(function() {\n\t\t\t\t\t\tconst select = document.getElementById('ahsp_template_id');\n\t\t\t\t\t\tconst section = document.getElementById('manual-cost-section');\n\t\t\t\t\t\tif (select && section && (!select.value || select.value === '')) {\n\t\t\t\t\t\t\tsection.style.display = 'block';\n\t\t\t\t\t\t}\n\t\t\t\t\t})();\n\t\t\t\t</script></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

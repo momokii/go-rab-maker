@@ -56,7 +56,7 @@ templ BaseFormModal(config ModalConfig) {
                         </button>
                         <button type="submit" class="btn btn-primary" hx-disabled-elt="this" hx-indicator="#htmx-loading">
                             <span>{config.SubmitLabel}</span>
-                            <span class="htmx-indicator">
+                            <span class="htmx-indicator" style="display: none;">
                                 <span class="loading loading-spinner text-primary"></span>
                             </span>
                         </button>

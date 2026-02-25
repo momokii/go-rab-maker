@@ -8,9 +8,8 @@ import (
 )
 
 func ResponseErrorModal(c *fiber.Ctx, title, message string) error {
-	c.Status(fiber.StatusUnprocessableEntity) // Set status code to 422
-	// Removed: c.Set("HX-Reswap", "none") - This was causing double modal issue
-	// The modal template has hx-swap-oob which handles the swap correctly
+	c.Status(fiber.StatusUnprocessableEntity)
+	c.Set("HX-Reswap", "none") // Prevent body swap, show modal as-is
 	errorComponentModal := components.HTMXModalError(title, message)
 	return adaptor.HTTPHandler(templ.Handler(errorComponentModal))(c)
 }
