@@ -46,14 +46,14 @@ func MaterialSummaryPage(materials []models.MaterialSummary) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"container mx-auto px-4 py-8\"><!-- Header --><div class=\"mb-8 flex justify-between items-center\"><div><h1 class=\"text-3xl font-bold text-gray-800 mb-2\">Material Summary</h1><p class=\"text-gray-600\">Overview of all materials needed across your projects</p></div><div class=\"flex gap-2\"><button hx-get=\"/material-summary/export?format=pdf\" hx-target=\"body\" hx-swap=\"none\" class=\"bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center gap-2\"><svg class=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z\"></path></svg> Export PDF</button> <button hx-get=\"/material-summary/export?format=excel\" hx-target=\"body\" hx-swap=\"none\" class=\"bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center gap-2\"><svg class=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 17v1a3 3 0 003 3h0a3 3 0 003-3v-1m-6 0h6M9 11V9a2 2 0 012-2h2a2 2 0 012 2v2M9 11h6m-6 0h.01M15 11h.01\"></path></svg> Export Excel</button></div></div><!-- Stats Cards --><div class=\"grid grid-cols-1 md:grid-cols-3 gap-6 mb-8\"><div class=\"bg-white rounded-lg shadow-md p-6\"><div class=\"flex items-center\"><div class=\"p-3 rounded-full bg-blue-100 text-blue-600 mr-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-8 w-8\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4\"></path></svg></div><div><p class=\"text-sm font-medium text-gray-600\">Total Materials</p><p class=\"text-2xl font-bold text-gray-900\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"container mx-auto px-4 py-8\"><!-- Header --><div class=\"mb-8 flex justify-between items-center\"><div><h1 class=\"text-3xl font-bold text-gray-800 mb-2\">Material Summary</h1><p class=\"text-gray-600\">Overview of all materials needed across your projects</p></div><div class=\"flex gap-2\"><a href=\"/material-summary/export?format=pdf\" class=\"bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 inline-flex items-center gap-2\"><svg class=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z\"></path></svg> Export PDF</a> <a href=\"/material-summary/export?format=excel\" class=\"bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 inline-flex items-center gap-2\"><svg class=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 17v1a3 3 0 003 3h0a3 3 0 003-3v-1m-6 0h6M9 11V9a2 2 0 012-2h2a2 2 0 012 2v2M9 11h6m-6 0h.01M15 11h.01\"></path></svg> Export Excel</a></div></div><!-- Stats Cards --><div class=\"grid grid-cols-1 md:grid-cols-3 gap-6 mb-8\"><div class=\"bg-white rounded-lg shadow-md p-6\"><div class=\"flex items-center\"><div class=\"p-3 rounded-full bg-blue-100 text-blue-600 mr-4\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-8 w-8\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4\"></path></svg></div><div><p class=\"text-sm font-medium text-gray-600\">Total Materials</p><p class=\"text-2xl font-bold text-gray-900\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(len(materials))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 52, Col: 67}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 46, Col: 67}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -72,7 +72,7 @@ func MaterialSummaryPage(materials []models.MaterialSummary) templ.Component {
 				return fmt.Sprintf("%.2f", total)
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 73, Col: 11}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 67, Col: 11}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -91,7 +91,7 @@ func MaterialSummaryPage(materials []models.MaterialSummary) templ.Component {
 				return fmt.Sprintf("%.0f", total)
 			}())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 95, Col: 11}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 89, Col: 11}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -134,7 +134,7 @@ func MaterialSummaryPage(materials []models.MaterialSummary) templ.Component {
 					var templ_7745c5c3_Var6 string
 					templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(material.ItemName)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 156, Col: 77}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 150, Col: 77}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 					if templ_7745c5c3_Err != nil {
@@ -147,7 +147,7 @@ func MaterialSummaryPage(materials []models.MaterialSummary) templ.Component {
 					var templ_7745c5c3_Var7 string
 					templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", material.TotalQuantity))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 159, Col: 91}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 153, Col: 91}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 					if templ_7745c5c3_Err != nil {
@@ -160,7 +160,7 @@ func MaterialSummaryPage(materials []models.MaterialSummary) templ.Component {
 					var templ_7745c5c3_Var8 string
 					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(material.Unit)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 162, Col: 61}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 156, Col: 61}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
@@ -173,7 +173,7 @@ func MaterialSummaryPage(materials []models.MaterialSummary) templ.Component {
 					var templ_7745c5c3_Var9 string
 					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", calculateUnitPrice(material.TotalCost, material.TotalQuantity)))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 165, Col: 134}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 159, Col: 134}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 					if templ_7745c5c3_Err != nil {
@@ -186,7 +186,7 @@ func MaterialSummaryPage(materials []models.MaterialSummary) templ.Component {
 					var templ_7745c5c3_Var10 string
 					templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", material.TotalCost))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 168, Col: 102}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/material-summary.page.templ`, Line: 162, Col: 102}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 					if templ_7745c5c3_Err != nil {

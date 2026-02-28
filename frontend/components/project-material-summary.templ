@@ -10,12 +10,16 @@ templ ProjectMaterialSummary(materials []models.MaterialSummary, project models.
 				<h2 class="text-xl font-semibold text-gray-800">Material Requirement Summary</h2>
 				<p class="text-sm text-gray-500 mt-1">Project: { project.ProjectName }</p>
 			</div>
-			<button
-				hx-get={"/projects/" + fmt.Sprintf("%d", project.ProjectId) + "/material-summary/export"}
-				hx-trigger="click"
-				class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded">
-				Export to PDF
-			</button>
+			<div class="flex gap-2">
+				<a href={"/projects/" + fmt.Sprintf("%d", project.ProjectId) + "/material-summary/export?format=pdf"}
+				   class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded inline-flex items-center">
+					Export to PDF
+				</a>
+				<a href={"/projects/" + fmt.Sprintf("%d", project.ProjectId) + "/material-summary/export?format=excel"}
+				   class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded inline-flex items-center">
+					Export to Excel
+				</a>
+			</div>
 		</div>
 
 		if len(materials) == 0 {

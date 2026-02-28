@@ -450,7 +450,7 @@ func MainContentApp(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</div></main><!-- Footer --><footer class=\"footer footer-center p-4 bg-base-300 text-base-content\"><aside><p>&copy; 2025 RAB Maker. All rights reserved.</p></aside></footer></div><!-- Sidebar Component -->")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</div></main><!-- Footer --><footer class=\"footer footer-center p-4 bg-base-300 text-base-content\"><aside><p>&copy; 2026 RAB Maker v1.0.0. All rights reserved.</p></aside></footer></div><!-- Sidebar Component -->")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

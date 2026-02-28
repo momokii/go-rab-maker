@@ -78,29 +78,28 @@ func (h *MaterialSummaryHandler) ExportMaterialSummary(c *fiber.Ctx) error {
 	// Get user from session
 	userData := c.Locals(middlewares.SESSION_USER_NAME).(models.SessionUser)
 
-	// Use the database service transaction
+	// First, fetch data in transaction
+	var materialSummaries []models.MaterialSummary
 	if _, err := h.dbService.Transaction(c.Context(), func(tx *sql.Tx) (int, error) {
-		// Get material summary data
-		materialSummaries, err := h.materialSummaryRepo.GetAllMaterialsSummary(tx, userData.ID)
+		var err error
+		materialSummaries, err = h.materialSummaryRepo.GetAllMaterialsSummary(tx, userData.ID)
 		if err != nil {
 			return fiber.StatusInternalServerError, err
 		}
-
-		// Export based on format
-		if format == "pdf" {
-			return h.exportToPDF(c, materialSummaries)
-		} else {
-			return h.exportToExcel(c, materialSummaries)
-		}
+		return fiber.StatusOK, nil
 	}); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Export failed")
 	}
 
-	return nil
+	// Then, export OUTSIDE of transaction (file is sent directly)
+	if format == "pdf" {
+		return h.exportToPDF(c, materialSummaries)
+	}
+	return h.exportToExcel(c, materialSummaries)
 }
 
 // exportToPDF exports the material summary to PDF format
-func (h *MaterialSummaryHandler) exportToPDF(c *fiber.Ctx, summaries []models.MaterialSummary) (int, error) {
+func (h *MaterialSummaryHandler) exportToPDF(c *fiber.Ctx, summaries []models.MaterialSummary) error {
 	c.Set("Content-Type", "application/pdf")
 	c.Set("Content-Disposition", "attachment; filename=material-summary.pdf")
 
@@ -126,14 +125,14 @@ func (h *MaterialSummaryHandler) exportToPDF(c *fiber.Ctx, summaries []models.Ma
 	// Write PDF
 	pdfData, err := pdf.Write()
 	if err != nil {
-		return fiber.StatusInternalServerError, err
+		return err
 	}
 
-	return fiber.StatusOK, c.Send(pdfData)
+	return c.Send(pdfData)
 }
 
 // exportToExcel exports the material summary to Excel format
-func (h *MaterialSummaryHandler) exportToExcel(c *fiber.Ctx, summaries []models.MaterialSummary) (int, error) {
+func (h *MaterialSummaryHandler) exportToExcel(c *fiber.Ctx, summaries []models.MaterialSummary) error {
 	c.Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	c.Set("Content-Disposition", "attachment; filename=material-summary.xlsx")
 
@@ -154,16 +153,16 @@ func (h *MaterialSummaryHandler) exportToExcel(c *fiber.Ctx, summaries []models.
 	}
 
 	if err := excel.AddSheet("Material Summary", headers, rows); err != nil {
-		return fiber.StatusInternalServerError, err
+		return err
 	}
 
 	// Write Excel
 	excelData, err := excel.Write()
 	if err != nil {
-		return fiber.StatusInternalServerError, err
+		return err
 	}
 
-	return fiber.StatusOK, c.Send(excelData)
+	return c.Send(excelData)
 }
 
 // ProjectMaterialSummary displays a summary of materials needed for a specific project
@@ -249,10 +248,12 @@ func (h *MaterialSummaryHandler) ExportProjectMaterialSummary(c *fiber.Ctx) erro
 	// Get user from session
 	userData := c.Locals(middlewares.SESSION_USER_NAME).(models.SessionUser)
 
-	// Use the database service transaction
+	// First, fetch data in transaction
+	var project models.Project
+	var materialSummaries []models.MaterialSummary
 	if _, err := h.dbService.Transaction(c.Context(), func(tx *sql.Tx) (int, error) {
 		// Verify project ownership
-		project, err := h.projectsRepo.FindById(tx, projectId)
+		project, err = h.projectsRepo.FindById(tx, projectId)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				return fiber.StatusNotFound, fiber.NewError(fiber.StatusNotFound, "Project not found")
@@ -266,26 +267,25 @@ func (h *MaterialSummaryHandler) ExportProjectMaterialSummary(c *fiber.Ctx) erro
 		}
 
 		// Get material summary data for the specific project
-		materialSummaries, err := h.materialSummaryRepo.GetProjectMaterialSummary(tx, projectId)
+		materialSummaries, err = h.materialSummaryRepo.GetProjectMaterialSummary(tx, projectId)
 		if err != nil {
 			return fiber.StatusInternalServerError, err
 		}
 
-		// Export based on format
-		if format == "pdf" {
-			return h.exportProjectToPDF(c, materialSummaries, project)
-		} else {
-			return h.exportProjectToExcel(c, materialSummaries, project)
-		}
+		return fiber.StatusOK, nil
 	}); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Export failed")
 	}
 
-	return nil
+	// Then, export OUTSIDE of transaction (file is sent directly)
+	if format == "pdf" {
+		return h.exportProjectToPDF(c, materialSummaries, project)
+	}
+	return h.exportProjectToExcel(c, materialSummaries, project)
 }
 
 // exportProjectToPDF exports the project material summary to PDF format
-func (h *MaterialSummaryHandler) exportProjectToPDF(c *fiber.Ctx, summaries []models.MaterialSummary, project models.Project) (int, error) {
+func (h *MaterialSummaryHandler) exportProjectToPDF(c *fiber.Ctx, summaries []models.MaterialSummary, project models.Project) error {
 	c.Set("Content-Type", "application/pdf")
 	c.Set("Content-Disposition", "attachment; filename=material-summary-"+project.ProjectName+".pdf")
 
@@ -311,14 +311,14 @@ func (h *MaterialSummaryHandler) exportProjectToPDF(c *fiber.Ctx, summaries []mo
 	// Write PDF
 	pdfData, err := pdf.Write()
 	if err != nil {
-		return fiber.StatusInternalServerError, err
+		return err
 	}
 
-	return fiber.StatusOK, c.Send(pdfData)
+	return c.Send(pdfData)
 }
 
 // exportProjectToExcel exports the project material summary to Excel format
-func (h *MaterialSummaryHandler) exportProjectToExcel(c *fiber.Ctx, summaries []models.MaterialSummary, project models.Project) (int, error) {
+func (h *MaterialSummaryHandler) exportProjectToExcel(c *fiber.Ctx, summaries []models.MaterialSummary, project models.Project) error {
 	c.Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	c.Set("Content-Disposition", "attachment; filename=material-summary-"+project.ProjectName+".xlsx")
 
@@ -339,14 +339,14 @@ func (h *MaterialSummaryHandler) exportProjectToExcel(c *fiber.Ctx, summaries []
 	}
 
 	if err := excel.AddSheet(fmt.Sprintf("Materials - %s", project.ProjectName), headers, rows); err != nil {
-		return fiber.StatusInternalServerError, err
+		return err
 	}
 
 	// Write Excel
 	excelData, err := excel.Write()
 	if err != nil {
-		return fiber.StatusInternalServerError, err
+		return err
 	}
 
-	return fiber.StatusOK, c.Send(excelData)
+	return c.Send(excelData)
 }
