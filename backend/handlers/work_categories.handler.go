@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/a-h/templ"
@@ -350,7 +351,16 @@ func (h *WorkCategoryHandler) DeleteWorkCategory(c *fiber.Ctx) error {
 		}
 		return fiber.StatusOK, nil
 	}); err != nil {
-		return utils.ResponseErrorModal(c, "Error", "Failed to delete work category")
+		// Check for foreign key constraint error OR repository pre-validation error (case-insensitive)
+		errLower := strings.ToLower(err.Error())
+		if strings.Contains(errLower, "foreign key") ||
+			strings.Contains(errLower, "constraint") ||
+			strings.Contains(errLower, "cannot delete") ||
+			strings.Contains(errLower, "used in") {
+			return utils.ResponseErrorModal(c, "Cannot Delete",
+				"Cannot delete this work category because it is used in work items")
+		}
+		return utils.ResponseErrorModal(c, "Error", "Failed to delete work category: "+err.Error())
 	}
 
 	// set for refresh table after success

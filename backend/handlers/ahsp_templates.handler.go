@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/a-h/templ"
@@ -339,7 +340,15 @@ func (h *AhspTemplateHandler) DeleteAhspTemplate(c *fiber.Ctx) error {
 		}
 		return fiber.StatusOK, nil
 	}); err != nil {
-		return utils.ResponseErrorModal(c, "Error", "Failed to delete AHSP template")
+		// Check for foreign key constraint error OR repository pre-validation error
+		errLower := strings.ToLower(err.Error())
+		if strings.Contains(errLower, "foreign key") ||
+			strings.Contains(errLower, "constraint") ||
+			err == sql.ErrTxDone {
+			return utils.ResponseErrorModal(c, "Cannot Delete",
+				"Cannot delete this AHSP template because it is used in work items")
+		}
+		return utils.ResponseErrorModal(c, "Error", "Failed to delete AHSP template: "+err.Error())
 	}
 
 	// refresh table data
