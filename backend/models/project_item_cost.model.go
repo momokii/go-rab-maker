@@ -51,6 +51,8 @@ type ProjectItemCostWithDetails struct {
 }
 
 type MaterialSummary struct {
+	ProjectId     int     `json:"project_id"`
+	ProjectName   string  `json:"project_name"`
 	ItemId        int     `json:"item_id"`
 	ItemName      string  `json:"item_name"`
 	TotalQuantity float64 `json:"total_quantity"`

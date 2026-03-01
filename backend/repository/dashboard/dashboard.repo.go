@@ -181,10 +181,11 @@ func (r *DashboardRepo) GetCategoryBreakdown(tx *sql.Tx, userId int, limit int) 
 	return results, nil
 }
 
-// GetTopExpensiveItems gets the most expensive items across all projects
+// GetTopExpensiveItems gets the most expensive items across all projects, grouped by project
 func (r *DashboardRepo) GetTopExpensiveItems(tx *sql.Tx, userId int, limit int) ([]models.TopExpensiveItem, error) {
 	query := `
-		SELECT pic.item_name,
+		SELECT p.project_name,
+		       pic.item_name,
 		       pic.item_type,
 		       COALESCE(SUM(pic.total_cost), 0) as total_cost,
 		       COALESCE(SUM(pic.quantity_needed), 0) as total_quantity,
@@ -195,8 +196,8 @@ func (r *DashboardRepo) GetTopExpensiveItems(tx *sql.Tx, userId int, limit int) 
 		LEFT JOIN master_materials m ON pic.master_item_id = m.material_id AND pic.item_type = 'MATERIAL'
 		LEFT JOIN master_labor_types l ON pic.master_item_id = l.labor_type_id AND pic.item_type = 'LABOR'
 		WHERE p.user_id = ?
-		GROUP BY pic.item_name, pic.item_type, COALESCE(m.unit, l.unit, pic.unit)
-		ORDER BY total_cost DESC
+		GROUP BY p.project_name, pic.item_name, pic.item_type, COALESCE(m.unit, l.unit, pic.unit)
+		ORDER BY total_cost DESC, p.project_name, pic.item_name
 		LIMIT ?
 	`
 
@@ -209,7 +210,7 @@ func (r *DashboardRepo) GetTopExpensiveItems(tx *sql.Tx, userId int, limit int) 
 	var results []models.TopExpensiveItem
 	for rows.Next() {
 		var item models.TopExpensiveItem
-		if err := rows.Scan(&item.ItemName, &item.ItemType, &item.TotalCost, &item.TotalQty, &item.Unit); err != nil {
+		if err := rows.Scan(&item.ProjectName, &item.ItemName, &item.ItemType, &item.TotalCost, &item.TotalQty, &item.Unit); err != nil {
 			return nil, err
 		}
 		results = append(results, item)

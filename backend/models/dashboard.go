@@ -25,11 +25,12 @@ type CategoryBreakdown struct {
 
 // TopExpensiveItem represents the most expensive items across all projects
 type TopExpensiveItem struct {
-	ItemName   string  `db:"item_name"`
-	ItemType   string  `db:"item_type"`
-	TotalCost  float64 `db:"total_cost"`
-	TotalQty   float64 `db:"total_quantity"`
-	Unit       string  `db:"unit"`
+	ProjectName string  `db:"project_name"`
+	ItemName    string  `db:"item_name"`
+	ItemType    string  `db:"item_type"`
+	TotalCost   float64 `db:"total_cost"`
+	TotalQty    float64 `db:"total_quantity"`
+	Unit        string  `db:"unit"`
 }
 
 // ProjectBreakdown represents cost breakdown by project

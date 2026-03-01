@@ -12,11 +12,13 @@ func NewMaterialSummaryRepo() *MaterialSummaryRepo {
 	return &MaterialSummaryRepo{}
 }
 
-// GetAllMaterialsSummary gets material summary across all projects for a user
+// GetAllMaterialsSummary gets material summary across all projects for a user, grouped by project
 func (r *MaterialSummaryRepo) GetAllMaterialsSummary(tx *sql.Tx, userId int) ([]models.MaterialSummary, error) {
 	// Get materials
 	materialsQuery := `
 		SELECT
+			p.project_id,
+			p.project_name,
 			COALESCE(m.material_id, 0) as item_id,
 			pic.item_name,
 			SUM(pic.quantity_needed) as total_quantity,
@@ -28,13 +30,15 @@ func (r *MaterialSummaryRepo) GetAllMaterialsSummary(tx *sql.Tx, userId int) ([]
 		JOIN project_work_items pwi ON pic.work_item_id = pwi.work_item_id
 		JOIN projects p ON pwi.project_id = p.project_id
 		WHERE p.user_id = ? AND pic.item_type = 'MATERIAL'
-		GROUP BY pic.master_item_id, pic.item_name, COALESCE(m.unit, pic.unit)
-		ORDER BY pic.item_name
+		GROUP BY p.project_id, p.project_name, pic.master_item_id, pic.item_name, COALESCE(m.unit, pic.unit)
+		ORDER BY p.project_name, pic.item_name
 	`
 
 	// Get labor
 	laborQuery := `
 		SELECT
+			p.project_id,
+			p.project_name,
 			COALESCE(lt.labor_type_id, 0) as item_id,
 			pic.item_name,
 			SUM(pic.quantity_needed) as total_quantity,
@@ -46,8 +50,8 @@ func (r *MaterialSummaryRepo) GetAllMaterialsSummary(tx *sql.Tx, userId int) ([]
 		JOIN project_work_items pwi ON pic.work_item_id = pwi.work_item_id
 		JOIN projects p ON pwi.project_id = p.project_id
 		WHERE p.user_id = ? AND pic.item_type = 'LABOR'
-		GROUP BY pic.master_item_id, pic.item_name, COALESCE(lt.unit, pic.unit)
-		ORDER BY pic.item_name
+		GROUP BY p.project_id, p.project_name, pic.master_item_id, pic.item_name, COALESCE(lt.unit, pic.unit)
+		ORDER BY p.project_name, pic.item_name
 	`
 
 	// Execute materials query
@@ -61,6 +65,8 @@ func (r *MaterialSummaryRepo) GetAllMaterialsSummary(tx *sql.Tx, userId int) ([]
 	for materialsRows.Next() {
 		var summary models.MaterialSummary
 		if err := materialsRows.Scan(
+			&summary.ProjectId,
+			&summary.ProjectName,
 			&summary.ItemId,
 			&summary.ItemName,
 			&summary.TotalQuantity,
@@ -83,6 +89,8 @@ func (r *MaterialSummaryRepo) GetAllMaterialsSummary(tx *sql.Tx, userId int) ([]
 	for laborRows.Next() {
 		var summary models.MaterialSummary
 		if err := laborRows.Scan(
+			&summary.ProjectId,
+			&summary.ProjectName,
 			&summary.ItemId,
 			&summary.ItemName,
 			&summary.TotalQuantity,
@@ -100,6 +108,14 @@ func (r *MaterialSummaryRepo) GetAllMaterialsSummary(tx *sql.Tx, userId int) ([]
 
 // GetProjectMaterialSummary gets material summary for a specific project
 func (r *MaterialSummaryRepo) GetProjectMaterialSummary(tx *sql.Tx, projectId int) ([]models.MaterialSummary, error) {
+	// Get project info first
+	var projectName string
+	var projectID int
+	err := tx.QueryRow("SELECT project_id, project_name FROM projects WHERE project_id = ?", projectId).Scan(&projectID, &projectName)
+	if err != nil {
+		return nil, err
+	}
+
 	// Get materials
 	materialsQuery := `
 		SELECT
@@ -154,6 +170,9 @@ func (r *MaterialSummaryRepo) GetProjectMaterialSummary(tx *sql.Tx, projectId in
 		); err != nil {
 			return nil, err
 		}
+		// Set project info
+		summary.ProjectId = projectID
+		summary.ProjectName = projectName
 		summaries = append(summaries, summary)
 	}
 
@@ -176,6 +195,9 @@ func (r *MaterialSummaryRepo) GetProjectMaterialSummary(tx *sql.Tx, projectId in
 		); err != nil {
 			return nil, err
 		}
+		// Set project info
+		summary.ProjectId = projectID
+		summary.ProjectName = projectName
 		summaries = append(summaries, summary)
 	}
 

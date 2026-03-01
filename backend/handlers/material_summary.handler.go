@@ -255,6 +255,8 @@ func (h *MaterialSummaryHandler) ProjectMaterialSummary(c *fiber.Ctx) error {
 			// Convert detailed summaries to regular summaries for compatibility
 			for _, detailed := range detailedSummaries {
 				materialSummaries = append(materialSummaries, models.MaterialSummary{
+					ProjectId:     projectData.ProjectId,
+					ProjectName:   projectData.ProjectName,
 					ItemId:        detailed.ItemId,
 					ItemName:      detailed.ItemName,
 					TotalQuantity: detailed.TotalQuantity,
