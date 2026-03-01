@@ -11,6 +11,7 @@ import (
 	"github.com/momokii/go-rab-maker/backend/databases"
 	"github.com/momokii/go-rab-maker/backend/middlewares"
 	"github.com/momokii/go-rab-maker/backend/models"
+	"github.com/momokii/go-rab-maker/backend/repository/dashboard"
 	"github.com/momokii/go-rab-maker/backend/repository/material_summary"
 	"github.com/momokii/go-rab-maker/backend/repository/project_item_costs"
 	"github.com/momokii/go-rab-maker/backend/repository/projects"
@@ -23,6 +24,7 @@ type MaterialSummaryHandler struct {
 	materialSummaryRepo  material_summary.MaterialSummaryRepo
 	projectsRepo         projects.ProjectsRepo
 	projectItemCostsRepo *project_item_costs.ProjectItemCostsRepo
+	dashboardRepo        dashboard.DashboardRepo
 }
 
 func NewMaterialSummaryHandler(
@@ -30,18 +32,24 @@ func NewMaterialSummaryHandler(
 	materialSummaryRepo material_summary.MaterialSummaryRepo,
 	projectsRepo projects.ProjectsRepo,
 	projectItemCostsRepo *project_item_costs.ProjectItemCostsRepo,
+	dashboardRepo dashboard.DashboardRepo,
 ) *MaterialSummaryHandler {
 	return &MaterialSummaryHandler{
 		dbService:            dbService,
 		materialSummaryRepo:  materialSummaryRepo,
 		projectsRepo:         projectsRepo,
 		projectItemCostsRepo: projectItemCostsRepo,
+		dashboardRepo:        dashboardRepo,
 	}
 }
 
 // MaterialSummary displays a summary of all materials needed across projects
 func (h *MaterialSummaryHandler) MaterialSummary(c *fiber.Ctx) error {
 	var materialSummaries []models.MaterialSummary
+	var stats models.MaterialSummaryStats
+	var projectBreakdown []models.ProjectBreakdown
+	var categoryBreakdown []models.CategoryBreakdown
+	var topExpensiveItems []models.TopExpensiveItem
 
 	// Get user from session
 	userData := c.Locals(middlewares.SESSION_USER_NAME).(models.SessionUser)
@@ -56,13 +64,51 @@ func (h *MaterialSummaryHandler) MaterialSummary(c *fiber.Ctx) error {
 			materialSummaries = materialSummariesData
 		}
 
+		// Get material summary stats
+		statsData, err := h.dashboardRepo.GetMaterialSummaryStats(tx, userData.ID)
+		if err != nil {
+			stats = models.MaterialSummaryStats{}
+		} else {
+			stats = statsData
+		}
+
+		// Get project breakdown
+		projectBreakdownData, err := h.dashboardRepo.GetProjectBreakdown(tx, userData.ID)
+		if err != nil {
+			projectBreakdown = []models.ProjectBreakdown{}
+		} else {
+			projectBreakdown = projectBreakdownData
+		}
+
+		// Get category breakdown (top 5)
+		categoryData, err := h.dashboardRepo.GetCategoryBreakdown(tx, userData.ID, 5)
+		if err != nil {
+			categoryBreakdown = []models.CategoryBreakdown{}
+		} else {
+			categoryBreakdown = categoryData
+		}
+
+		// Get top 10 expensive items
+		topItemsData, err := h.dashboardRepo.GetTopExpensiveItems(tx, userData.ID, 10)
+		if err != nil {
+			topExpensiveItems = []models.TopExpensiveItem{}
+		} else {
+			topExpensiveItems = topItemsData
+		}
+
 		return fiber.StatusOK, nil
 	}); err != nil {
 		return utils.ResponseErrorModal(c, "Error", "Failed to fetch material summary")
 	}
 
 	// Render the material summary page
-	materialSummaryComponent := components.MaterialSummaryPage(materialSummaries)
+	materialSummaryComponent := components.MaterialSummaryPage(
+		materialSummaries,
+		stats,
+		projectBreakdown,
+		categoryBreakdown,
+		topExpensiveItems,
+	)
 	return adaptor.HTTPHandler(templ.Handler(materialSummaryComponent))(c)
 }
 

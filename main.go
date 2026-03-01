@@ -105,6 +105,7 @@ func main() {
 		*materialSummaryRepo,
 		*projectsRepo,
 		projectItemCostsRepo,
+		*dashboardRepo,
 	)
 
 	// session for auth

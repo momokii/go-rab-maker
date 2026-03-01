@@ -35,21 +35,25 @@ func NewDashboardHandler(
 
 // Dashboard displays the main dashboard with project overview
 func (h *DashboardHandler) Dashboard(c *fiber.Ctx) error {
-	var projects []models.Project
+	var enhancedProjects []models.EnhancedProjectData
 	var totalProjects int
 	var totalCost float64
+	var totalWorkItems int
+	var typeCostBreakdown []models.TypeCostBreakdown
+	var categoryBreakdown []models.CategoryBreakdown
+	var topExpensiveItems []models.TopExpensiveItem
 
 	// Get user from session
 	userData := c.Locals(middlewares.SESSION_USER_NAME).(models.SessionUser)
 
 	// Use the database service transaction
 	if _, err := h.dbService.Transaction(c.Context(), func(tx *sql.Tx) (int, error) {
-		// Get recent projects for the user
-		projectsData, err := h.dashboardRepo.GetRecentProjects(tx, userData.ID, 10)
+		// Get enhanced recent projects for the user
+		enhancedProjectsData, err := h.dashboardRepo.GetEnhancedRecentProjects(tx, userData.ID, 10)
 		if err != nil {
-			projects = []models.Project{}
+			enhancedProjects = []models.EnhancedProjectData{}
 		} else {
-			projects = projectsData
+			enhancedProjects = enhancedProjectsData
 		}
 
 		// Get total projects count
@@ -60,6 +64,14 @@ func (h *DashboardHandler) Dashboard(c *fiber.Ctx) error {
 			totalProjects = totalProjectsData
 		}
 
+		// Get total work items count
+		workItemsData, err := h.dashboardRepo.GetWorkItemsCount(tx, userData.ID)
+		if err != nil {
+			totalWorkItems = 0
+		} else {
+			totalWorkItems = workItemsData
+		}
+
 		// Get total cost of all projects
 		totalCostData, err := h.dashboardRepo.GetProjectsTotalCost(tx, userData.ID)
 		if err != nil {
@@ -68,12 +80,44 @@ func (h *DashboardHandler) Dashboard(c *fiber.Ctx) error {
 			totalCost = totalCostData
 		}
 
+		// Get cost breakdown by type (Material vs Labor)
+		typeCostData, err := h.dashboardRepo.GetTypeCostBreakdown(tx, userData.ID)
+		if err != nil {
+			typeCostBreakdown = []models.TypeCostBreakdown{}
+		} else {
+			typeCostBreakdown = typeCostData
+		}
+
+		// Get category breakdown (top 5)
+		categoryData, err := h.dashboardRepo.GetCategoryBreakdown(tx, userData.ID, 5)
+		if err != nil {
+			categoryBreakdown = []models.CategoryBreakdown{}
+		} else {
+			categoryBreakdown = categoryData
+		}
+
+		// Get top 10 expensive items
+		topItemsData, err := h.dashboardRepo.GetTopExpensiveItems(tx, userData.ID, 10)
+		if err != nil {
+			topExpensiveItems = []models.TopExpensiveItem{}
+		} else {
+			topExpensiveItems = topItemsData
+		}
+
 		return fiber.StatusOK, nil
 	}); err != nil {
 		return utils.ResponseErrorModal(c, "Error", "Failed to load dashboard data")
 	}
 
 	// Render the dashboard page
-	dashboardComponent := components.DashboardPage(projects, totalProjects, totalCost)
+	dashboardComponent := components.DashboardPage(
+		enhancedProjects,
+		totalProjects,
+		totalWorkItems,
+		totalCost,
+		typeCostBreakdown,
+		categoryBreakdown,
+		topExpensiveItems,
+	)
 	return adaptor.HTTPHandler(templ.Handler(dashboardComponent))(c)
 }
