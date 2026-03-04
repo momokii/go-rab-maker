@@ -28,7 +28,7 @@ templ MaterialsTablePage(materials []models.MasterMaterial, paginationInfo model
                         <tr class="hover">
                             <td>{material.MaterialName}</td>
                             <td>{material.Unit}</td>
-                            <td>{material.DefaultUnitPrice}</td>
+                            <td>{ formatCurrency(material.DefaultUnitPrice) }</td>
                             <td>{material.CreatedAt}</td>
                             <td>
                                 <div class="join">

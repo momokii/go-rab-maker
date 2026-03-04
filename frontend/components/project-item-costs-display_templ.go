@@ -34,27 +34,27 @@ func ProjectItemCostsDisplay(costs []models.ProjectItemCostWithDetails) templ.Co
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"bg-white rounded-lg shadow-sm p-6\"><div class=\"flex justify-between items-center mb-4\"><h5 class=\"text-lg font-semibold text-gray-800\">Cost Breakdown</h5><div class=\"flex gap-4 text-sm\"><div class=\"flex items-center\"><span class=\"w-3 h-3 bg-blue-500 rounded-full mr-2\"></span> <span>Materials: Rp ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"bg-white rounded-lg shadow-sm p-6\"><div class=\"flex justify-between items-center mb-4\"><h5 class=\"text-lg font-semibold text-gray-800\">Cost Breakdown</h5><div class=\"flex gap-4 text-sm\"><div class=\"flex items-center\"><span class=\"w-3 h-3 bg-blue-500 rounded-full mr-2\"></span> <span>Materials: ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", calculateMaterialCostsTotal(costs)))
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(formatCurrency(calculateMaterialCostsTotal(costs)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 15, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 15, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</span></div><div class=\"flex items-center\"><span class=\"w-3 h-3 bg-green-500 rounded-full mr-2\"></span> <span>Labor: Rp ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</span></div><div class=\"flex items-center\"><span class=\"w-3 h-3 bg-green-500 rounded-full mr-2\"></span> <span>Labor: ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.0f", calculateLaborCostsTotal(costs)))
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(formatCurrency(calculateLaborCostsTotal(costs)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 19, Col: 75}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 19, Col: 67}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -128,27 +128,27 @@ func ProjectItemCostsDisplay(costs []models.ProjectItemCostWithDetails) templ.Co
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</td><td class=\"px-4 py-2 text-sm text-gray-900\">Rp ")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</td><td class=\"px-4 py-2 text-sm text-gray-900\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var8 string
-					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", cost.UnitPriceAtCreation))
+					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(formatCurrency(cost.UnitPriceAtCreation))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 57, Col: 104}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 57, Col: 96}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</td><td class=\"px-4 py-2 text-sm font-medium text-gray-900 text-right\">Rp ")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</td><td class=\"px-4 py-2 text-sm font-medium text-gray-900 text-right\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var9 string
-					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", cost.TotalCost))
+					templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(formatCurrency(cost.TotalCost))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 58, Col: 117}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 58, Col: 109}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 					if templ_7745c5c3_Err != nil {
@@ -160,14 +160,14 @@ func ProjectItemCostsDisplay(costs []models.ProjectItemCostWithDetails) templ.Co
 					}
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</tbody><tfoot class=\"bg-blue-50\"><tr><th colspan=\"5\" class=\"px-4 py-2 text-right text-sm font-medium text-blue-600\">Material Subtotal:</th><th class=\"px-4 py-2 text-right text-sm font-bold text-blue-600\">Rp ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</tbody><tfoot class=\"bg-blue-50\"><tr><th colspan=\"5\" class=\"px-4 py-2 text-right text-sm font-medium text-blue-600\">Material Subtotal:</th><th class=\"px-4 py-2 text-right text-sm font-bold text-blue-600\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 string
-			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", calculateMaterialCostsTotal(costs)))
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(formatCurrency(calculateMaterialCostsTotal(costs)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 66, Col: 133}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 66, Col: 125}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -231,27 +231,27 @@ func ProjectItemCostsDisplay(costs []models.ProjectItemCostWithDetails) templ.Co
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</td><td class=\"px-4 py-2 text-sm text-gray-900\">Rp ")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</td><td class=\"px-4 py-2 text-sm text-gray-900\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var15 string
-					templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", cost.UnitPriceAtCreation))
+					templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(formatCurrency(cost.UnitPriceAtCreation))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 101, Col: 104}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 101, Col: 96}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</td><td class=\"px-4 py-2 text-sm font-medium text-gray-900 text-right\">Rp ")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</td><td class=\"px-4 py-2 text-sm font-medium text-gray-900 text-right\">")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 					var templ_7745c5c3_Var16 string
-					templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", cost.TotalCost))
+					templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(formatCurrency(cost.TotalCost))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 102, Col: 117}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 102, Col: 109}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 					if templ_7745c5c3_Err != nil {
@@ -263,27 +263,27 @@ func ProjectItemCostsDisplay(costs []models.ProjectItemCostWithDetails) templ.Co
 					}
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</tbody><tfoot class=\"bg-green-50\"><tr><th colspan=\"5\" class=\"px-4 py-2 text-right text-sm font-medium text-green-600\">Labor Subtotal:</th><th class=\"px-4 py-2 text-right text-sm font-bold text-green-600\">Rp ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</tbody><tfoot class=\"bg-green-50\"><tr><th colspan=\"5\" class=\"px-4 py-2 text-right text-sm font-medium text-green-600\">Labor Subtotal:</th><th class=\"px-4 py-2 text-right text-sm font-bold text-green-600\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 string
-			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", calculateLaborCostsTotal(costs)))
+			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(formatCurrency(calculateLaborCostsTotal(costs)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 110, Col: 131}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 110, Col: 123}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</th></tr></tfoot></table></div></div><!-- Total Summary --> <div class=\"border-t pt-4\"><div class=\"flex justify-between items-center\"><div><p class=\"text-sm text-gray-600\"><strong>Cost Calculation:</strong> Coefficient × Volume = Quantity Needed<br>Quantity Needed × Unit Price = Total Cost</p></div><div class=\"text-right\"><p class=\"text-sm text-gray-600\">Total Cost</p><p class=\"text-2xl font-bold text-gray-900\">Rp ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</th></tr></tfoot></table></div></div><!-- Total Summary --> <div class=\"border-t pt-4\"><div class=\"flex justify-between items-center\"><div><p class=\"text-sm text-gray-600\"><strong>Cost Calculation:</strong> Coefficient × Volume = Quantity Needed<br>Quantity Needed × Unit Price = Total Cost</p></div><div class=\"text-right\"><p class=\"text-sm text-gray-600\">Total Cost</p><p class=\"text-2xl font-bold text-gray-900\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var18 string
-			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", calculateItemCostsTotal(costs)))
+			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(formatCurrency(calculateItemCostsTotal(costs)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 129, Col: 106}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-item-costs-display.templ`, Line: 129, Col: 98}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {

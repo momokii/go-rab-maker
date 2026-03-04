@@ -86,7 +86,7 @@ templ DashboardPage(
 						</div>
 						<div>
 							<p class="text-xs text-gray-600">Total Cost</p>
-							<p class="text-lg font-bold text-gray-900">Rp { fmt.Sprintf("%.0f", totalCost) }</p>
+							<p class="text-lg font-bold text-gray-900">{ formatCurrency(totalCost) }</p>
 						</div>
 					</div>
 				</div>
@@ -152,7 +152,7 @@ templ DashboardPage(
 												<div class="text-sm text-gray-500">{ project.WorkItemCount }</div>
 											</td>
 											<td class="px-4 py-3 text-right">
-												<div class="text-sm font-medium text-gray-900">Rp { fmt.Sprintf("%.0f", project.TotalCost) }</div>
+												<div class="text-sm font-medium text-gray-900">{ formatCurrency(project.TotalCost) }</div>
 											</td>
 											<td class="px-4 py-3">
 												<div class="text-sm text-gray-500">{ formatDate(project.CreatedAt) }</div>
@@ -193,7 +193,7 @@ templ DashboardPage(
 										</div>
 									</div>
 									<div class="ml-4 text-right">
-										<p class="text-sm font-bold text-gray-900">Rp { fmt.Sprintf("%.0f", cat.TotalCost) }</p>
+										<p class="text-sm font-bold text-gray-900">{ formatCurrency(cat.TotalCost) }</p>
 										<p class="text-xs text-gray-500">{ fmt.Sprintf("%.1f", cat.TotalVolume) } units</p>
 									</div>
 								</div>
@@ -241,7 +241,7 @@ templ DashboardPage(
 										</td>
 										<td class="px-4 py-3 text-right text-sm text-gray-500">{ fmt.Sprintf("%.2f", item.TotalQty) }</td>
 										<td class="px-4 py-3 text-sm text-gray-500">{ item.Unit }</td>
-										<td class="px-4 py-3 text-right text-sm font-bold text-gray-900">Rp { fmt.Sprintf("%.0f", item.TotalCost) }</td>
+										<td class="px-4 py-3 text-right text-sm font-bold text-gray-900">{ formatCurrency(item.TotalCost) }</td>
 									</tr>
 								}
 							</tbody>
@@ -278,10 +278,10 @@ templ costBreakdownCard(title string, cardClass string, iconColor string, amount
 func getCostByType(costs []models.TypeCostBreakdown, itemType string) string {
 	for _, cost := range costs {
 		if cost.ItemType == itemType {
-			return "Rp " + fmt.Sprintf("%.0f", cost.TotalCost)
+			return formatCurrency(cost.TotalCost)
 		}
 	}
-	return "Rp 0"
+	return formatCurrency(0)
 }
 
 func calculateCostRatio(costs []models.TypeCostBreakdown) string {

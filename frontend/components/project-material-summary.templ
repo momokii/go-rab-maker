@@ -65,7 +65,7 @@ templ ProjectMaterialSummary(materials []models.MaterialSummary, project models.
 						</div>
 						<div>
 							<p class="text-sm font-medium text-purple-600">Total Cost</p>
-							<p class="text-lg font-bold text-purple-900">Rp { fmt.Sprintf("%.0f", calculateMaterialTotalCost(materials)) }</p>
+							<p class="text-lg font-bold text-purple-900">{ formatCurrency(calculateMaterialTotalCost(materials)) }</p>
 						</div>
 					</div>
 				</div>
@@ -137,10 +137,10 @@ templ ProjectMaterialSummary(materials []models.MaterialSummary, project models.
 									<div class="text-sm text-gray-500">{ material.Unit }</div>
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap">
-									<div class="text-sm text-gray-900">Rp { fmt.Sprintf("%.2f", calculateUnitPrice(material.TotalCost, material.TotalQuantity)) }</div>
+									<div class="text-sm text-gray-900">{ formatCurrency(calculateUnitPrice(material.TotalCost, material.TotalQuantity)) }</div>
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap">
-									<div class="text-sm font-medium text-gray-900">Rp { fmt.Sprintf("%.2f", material.TotalCost) }</div>
+									<div class="text-sm font-medium text-gray-900">{ formatCurrency(material.TotalCost) }</div>
 								</td>
 							</tr>
 						}
@@ -151,7 +151,7 @@ templ ProjectMaterialSummary(materials []models.MaterialSummary, project models.
 								Total Cost
 							</th>
 							<td class="px-6 py-3 text-left text-sm font-bold text-gray-900">
-								Rp { fmt.Sprintf("%.2f", calculateMaterialTotalCost(materials)) }
+								{ formatCurrency(calculateMaterialTotalCost(materials)) }
 							</td>
 						</tr>
 					</tfoot>

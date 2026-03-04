@@ -86,14 +86,14 @@ func ProjectDetailPage(project models.Project, workItems []models.ProjectWorkIte
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</p></div><div class=\"text-right\"><p class=\"text-sm text-gray-500\">Total Estimated Cost</p><p class=\"text-2xl font-bold text-blue-600\">Rp ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</p></div><div class=\"text-right\"><p class=\"text-sm text-gray-500\">Total Estimated Cost</p><p class=\"text-2xl font-bold text-blue-600\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%.2f", totalCost))
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(formatCurrency(totalCost))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-detail.page.templ`, Line: 22, Col: 85}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `frontend/components/project-detail.page.templ`, Line: 22, Col: 77}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {

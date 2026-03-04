@@ -29,7 +29,7 @@ templ LaborTypesTablePage(laborTypes []models.MasterLaborType, paginationInfo mo
                         <tr class="hover">
                             <td>{laborType.RoleName}</td>
                             <td>{laborType.Unit}</td>
-                            <td>{laborType.DefaultDailyWage}</td>
+                            <td>{ formatCurrency(laborType.DefaultDailyWage) }</td>
                             <td>{laborType.CreatedAt}</td>
                             <td>{laborType.UpdatedAt}</td>
                             <td>
