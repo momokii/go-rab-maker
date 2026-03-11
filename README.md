@@ -17,15 +17,16 @@ A comprehensive **Rencana Anggaran Biaya** (Budget Planning) application for con
 
 ### Technical Highlights
 - Server-side rendering with HTMX for responsive UX
-- Real-time cost calculations
+- Real-time cost calculations with formatted currency display (Indonesian Rupiah)
 - User authentication and session management
 - Mobile-responsive design with DaisyUI and Tailwind CSS
+- PDF and Excel export functionality for reports
 
 ## Tech Stack
 
-- **Backend**: Go 1.21+ with Fiber web framework
+- **Backend**: Go 1.24+ with Fiber web framework
 - **Frontend**: Templ (Go templating) with HTMX
-- **Database**: SQLite with modernc.org driver
+- **Database**: SQLite with modernc.org driver (pure Go, no CGo)
 - **UI**: DaisyUI + Tailwind CSS
 - **Authentication**: Session-based authentication
 
@@ -51,20 +52,20 @@ go-rab-maker/
 │   └── utils/              # Utility functions
 ├── frontend/
 │   └── components/         # Templ components
-├── main.go                 # Application entry point
+│       ├── utils.go        # Shared utility functions
+│       └── *.templ         # Template files
+├── Dockerfile              # Docker build configuration
+├── docker-compose.yml      # Docker Compose setup
+├── .env.example           # Environment variables template
+├── main.go                # Application entry point
 ├── go.mod
 ├── go.sum
 └── README.md
 ```
 
-## Setup Instructions
+## Quick Start
 
-### Prerequisites
-- Go 1.21 or higher
-- SQLite3 (included with modernc.org/sqlite driver)
-- Git
-
-### Installation
+### Using Docker (Recommended)
 
 1. **Clone the repository:**
    ```bash
@@ -72,12 +73,58 @@ go-rab-maker/
    cd go-rab-maker
    ```
 
-2. **Download dependencies:**
+2. **Configure environment variables (optional):**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+3. **Run with Docker Compose:**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Access the application:**
+   - Open your browser to `http://localhost:3002`
+   - Default login: username: `admin`, password: `admin123`
+   - **Important**: Change the default admin password in production!
+
+5. **Stop the application:**
+   ```bash
+   docker-compose down
+   ```
+
+### Manual Installation
+
+#### Prerequisites
+- Go 1.24 or higher
+- Git
+- Templ CLI (for template compilation)
+
+#### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd go-rab-maker
+   ```
+
+2. **Install dependencies:**
    ```bash
    go mod download
    ```
 
-3. **Configure environment variables (optional):**
+3. **Install Templ CLI:**
+   ```bash
+   go install github.com/a-h/templ/cmd/templ@latest
+   ```
+
+4. **Build frontend templates:**
+   ```bash
+   templ generate
+   ```
+
+5. **Configure environment variables (optional):**
    ```bash
    # Create a .env file (optional - default values will be used)
    cat > .env << EOF
@@ -93,7 +140,7 @@ go-rab-maker/
    - `SECRET_KEY_JWT`: Secret key for session encryption
    - `DEBUG`: Enable debug logging (`1` or `true`)
 
-4. **Run the application:**
+6. **Run the application:**
    ```bash
    # Run directly
    go run main.go
@@ -103,12 +150,10 @@ go-rab-maker/
    ./rab-maker
    ```
 
-5. **Access the application:**
+7. **Access the application:**
    - Open your browser to `http://localhost:3002`
-   - Default login: username: `admin`, password: `admin123`
-   - **Important**: Change the default admin password in production!
 
-### Development Mode
+## Development Mode
 
 For development with hot-reload:
 
@@ -118,6 +163,11 @@ go install github.com/cosmtrek/air@latest
 
 # Run with hot reload
 air
+```
+
+**Important:** After making changes to `.templ` files, you need to run:
+```bash
+templ generate
 ```
 
 ## Usage Guide
@@ -149,6 +199,13 @@ air
 5. **View Material Summaries:**
    - Check the Material Summary page for aggregate requirements
    - Export to PDF or Excel for procurement planning
+
+## Currency Formatting
+
+The application displays all monetary values in Indonesian Rupiah format with thousand separators:
+- **Format**: `Rp 1.000.000` (1 million Rupiah)
+- **No decimals**: All amounts are rounded to whole numbers
+- Applied across: Dashboard, Project Details, Material Summaries, and all cost displays
 
 ## Database Schema
 
@@ -201,13 +258,19 @@ go test ./backend/repository/master_materials/
 
 **Port already in use:**
 ```bash
-# Change the port in .env file or set it directly
-PORT=3003 go run main.go
+# Change the port in .env file or docker-compose.yml
+PORT=3003 docker-compose up -d
 ```
 
 **Database file not found:**
 - The database will be created automatically on first run
 - Check file permissions in the `databases/` directory
+
+**Volume permission errors (Docker):**
+- The container includes an entrypoint script that automatically fixes permissions
+- If you see "unable to open database file: out of memory (14)", it's a permissions issue
+- The entrypoint script runs as root, fixes the database directory permissions, then switches to appuser
+- Make sure the `su-exec` package is available in the Docker image (included in Dockerfile)
 
 **Session/Authentication issues:**
 - Clear browser cookies
@@ -219,10 +282,23 @@ PORT=3003 go run main.go
 - Check that materials and labor types have valid prices
 - Review server logs for calculation errors
 
+**Docker build issues:**
+```bash
+# Rebuild without cache
+docker-compose build --no-cache
+
+# Check logs
+docker-compose logs -f
+```
+
 ### Debug Mode
 
 Enable debug logging:
 ```bash
+# Docker
+DEBUG=1 docker-compose up
+
+# Manual
 DEBUG=1 go run main.go
 ```
 
@@ -240,40 +316,62 @@ DEBUG=1 go run main.go
 
 3. **Set strong secret key:**
    - Generate a random `SECRET_KEY_JWT` and set it in environment variables
+   - Use: `openssl rand -base64 32`
 
 4. **Database backups:**
-   - Regularly backup the `databases/database.sqlite` file
-   - Consider using a separate database server for production
+   - Regularly backup the database file from Docker volume
+   - Use: `docker exec rab-maker-app cp /app/backend/databases/database.sqlite /backup/`
+   - Or backup the named volume directly
 
 5. **File permissions:**
-   - Restrict write access to the database file
-   - Use proper file permissions for the application directory
+   - The Docker container runs as non-root user `appuser`
+   - Ensure proper permissions for mounted volumes
 
 ## Production Deployment
 
 ### Using Docker (Recommended)
 
-```dockerfile
-FROM golang:1.21-alpine AS builder
-WORKDIR /app
-COPY . .
-RUN go mod download
-RUN go build -o rab-maker
+The application is containerized and ready for production deployment with Docker Compose.
 
-FROM alpine:latest
-RUN apk --no-cache add ca-certificates
-WORKDIR /root/
-COPY --from=builder /app/rab-maker .
-COPY --from=builder /app/databases ./databases
+**Key Features:**
+- Multi-stage build with Alpine Linux for minimal image size
+- Non-root user (`appuser`) for security
+- Automatic permission handling via entrypoint script
+- Health checks for container monitoring
+- Persistent volume for database storage
 
-ENV PORT=3002
-ENV ENV=production
+**Deployment Steps:**
 
-EXPOSE 3002
-CMD ["./rab-maker"]
+```bash
+# Build and start
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop
+docker-compose down
 ```
 
+**Database Persistence:**
+- The database is stored in a Docker volume at `/app/databases/database.sqlite`
+- A bind mount `./rab-db-data:/app/databases` is used for easy local access
+- The entrypoint script automatically fixes permissions on startup
+- Data persists across container restarts
+
+**Note on the "OOM" Error:**
+If you see "unable to open database file: out of memory (14)", this is NOT an actual memory issue. It's SQLite error code 14 (SQLITE_CANTOPEN), which occurs when:
+- The database directory has incorrect permissions
+- The container runs as `appuser` (uid 1000) but the directory is owned by root
+
+The entrypoint script (`docker-entrypoint.sh`) handles this automatically by:
+1. Running as root initially
+2. Creating/fixing the database directory permissions
+3. Switching to `appuser` before starting the application
+
 ### Using systemd
+
+For traditional server deployment:
 
 Create a service file at `/etc/systemd/system/rab-maker.service`:
 
@@ -295,6 +393,59 @@ Environment="ENV=production"
 WantedBy=multi-user.target
 ```
 
+Then:
+```bash
+sudo systemctl enable rab-maker
+sudo systemctl start rab-maker
+```
+
+## Changelog
+
+### v1.3.0 (Latest)
+
+**Docker Deployment Fixes:**
+- Fixed Docker volume permission issue that caused "OOM" error
+- Added `docker-entrypoint.sh` script for automatic permission handling
+- Container now starts as root, fixes database permissions, then switches to appuser
+- Added `su-exec` package for privilege dropping
+- Database now persists correctly with bind mount `./rab-db-data:/app/databases`
+
+**Note on "OOM" Error:**
+- The "unable to open database file: out of memory (14)" error was NOT a real memory issue
+- It was SQLite error code 14 (SQLITE_CANTOPEN) due to permission problems
+- Fixed by ensuring the database directory is writable by appuser (uid 1000)
+- The entrypoint script handles this automatically on container startup
+
+### v1.2.0
+
+**New Features:**
+- Currency formatting with Indonesian thousand separators (Rp 1.000.000)
+- Enhanced dashboard with improved statistics and breakdowns
+- Added `frontend/components/utils.go` for shared utility functions
+
+**Improvements:**
+- Enhanced PDF/Excel export functionality
+- Fixed popup error modals throughout the application
+- Added "every page explanation" sections for better UX
+- Removed debug log statements for cleaner production logs
+
+**Bug Fixes:**
+- Fixed modal errors when deleting master data that is in use
+- Fixed manual entry display and editing for work items
+- Fixed project detail views and summaries
+- Fixed search functionality across tables
+
+### v1.1.0
+- Fixed critical bugs in delete operations and search functionality
+- Added input validation using validator tags
+- Implemented proper error handling for cost calculations
+- Fixed NULL handling for user_id in multi-tenant scenarios
+- Added input sanitization to prevent issues with whitespace
+- Fixed CookieSecure for localhost development
+- Removed hardcoded delays for better performance
+- Fixed directory naming inconsistencies
+- Added structured logging utility
+
 ## Contributing
 
 Contributions are welcome! Please:
@@ -314,23 +465,6 @@ For issues and questions:
 - Create an issue on GitHub
 - Check the troubleshooting section above
 - Review the code comments and documentation
-
-## Changelog
-
-### Recent Improvements
-- Fixed critical bugs in delete operations and search functionality
-- Added input validation using validator tags
-- Implemented proper error handling for cost calculations
-- Fixed NULL handling for user_id in multi-tenant scenarios
-- Added input sanitization to prevent issues with whitespace
-- Fixed CookieSecure for localhost development
-- Removed hardcoded delays for better performance
-- Fixed directory naming inconsistencies
-- Added structured logging utility
-- Updated documentation
-
-### Version
-Current version: v1.1.0
 
 ---
 

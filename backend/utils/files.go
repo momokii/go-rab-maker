@@ -9,9 +9,23 @@ const (
 	APP_DATA_DIR_NAME = "RABMaker"
 )
 
-// getBaseDir returns the appropriate base directory for storing application data
+// isRunningInDocker checks if the application is running in a Docker container
+func isRunningInDocker() bool {
+	// Check for .dockerenv file (Docker creates this file in containers)
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		return true
+	}
+	return false
+}
+
+// GetBaseDir returns the appropriate base directory for storing application data
+// In Docker, it uses /app directory
 // In development, it uses a local directory; in production, it uses a user-specific directory
 func GetBaseDir() string {
+	// Check if running in Docker container
+	if isRunningInDocker() {
+		return "/app"
+	}
 	// Try to use a directory in user's home for production
 	userConfigDir, err := os.UserConfigDir()
 

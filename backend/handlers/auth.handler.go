@@ -34,7 +34,6 @@ func (h *AuthHandler) LoginView(c *fiber.Ctx) error {
 
 // Login handles user authentication
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
-	time.Sleep(1 * time.Second) // Simulate processing time for better UX
 
 	username := c.FormValue("username")
 	password := c.FormValue("password")
@@ -99,7 +98,6 @@ func (h *AuthHandler) RegisterView(c *fiber.Ctx) error {
 
 // Register handles user registration
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
-	time.Sleep(1 * time.Second) // Simulate processing time
 
 	username := c.FormValue("username")
 	password := c.FormValue("password")

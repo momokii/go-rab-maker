@@ -136,4 +136,4 @@ CREATE INDEX idx_ahsp_lab_template_id ON ahsp_labor_components(template_id);
 
 -- Insert default admin user (password: admin123)
 -- Note: In production, this should be changed or created through a proper setup process
-INSERT OR IGNORE INTO users (username, password) VALUES ('admin', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+INSERT OR IGNORE INTO users (username, password) VALUES ('admin', '$2a$10$xczsaOoRo5OCy1AC5hHWA.OoMshm7uY0Xq4gdO0ow.SMr11EEtUx6');

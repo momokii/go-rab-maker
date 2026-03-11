@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+docs
+plan
+
+# IDE
+.vscode
+.idea
+.claude
+
+# Development
+.air.toml
+.env
+.env.local
+tmp
+
+# Local data directories (using named volumes instead)
+rab-db-data
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+go-rab-maker
+*.exe
+*.test
+*.out
+
+# Continue
+.continue

@@ -3,4 +3,7 @@ tmp
 .continue
 plan
 
+# Docker
+.env
+
 # files

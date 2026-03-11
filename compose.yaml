@@ -1,0 +1,23 @@
+services:
+  rab-maker:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    # container_name: rab-maker-app
+    image: rabmaker:latest
+    ports:
+      - "${PORT:-3002}:3002"
+    environment:
+      - PORT=${PORT:-3002}
+      - ENV=${ENV:-production}
+      - DEBUG=${DEBUG:-0}
+    volumes:
+      # Persist database directory to local folder (matches /app/databases)
+      - ./rab-db-data:/app/databases
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3002/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
