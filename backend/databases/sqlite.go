@@ -10,6 +10,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -47,45 +50,173 @@ type SQLiteDB struct {
 	Write         *sql.DB // Exported field for access
 }
 
+// migrationInfo holds parsed migration information
+type migrationInfo struct {
+	version int
+	name    string
+	fileName string
+}
+
 func runMigrations(db *SQLiteDB) error {
-	// Read all migration files
-	entries, err := fs.ReadDir(migrationsFS, "migrations")
-	if err != nil {
-		return fmt.Errorf("failed to read migrations directory: %w", err)
+	// Step 1: Ensure schema_migrations table exists
+	if err := ensureMigrationsTableExists(db); err != nil {
+		return fmt.Errorf("failed to ensure migrations table exists: %w", err)
 	}
 
-	// Execute each migration file in order
+	// Step 2: Get applied migrations from database
+	appliedVersions, err := getAppliedMigrations(db)
+	if err != nil {
+		return fmt.Errorf("failed to get applied migrations: %w", err)
+	}
+
+	// Step 3: Read and parse all migration files
+	migrations, err := parseMigrationFiles()
+	if err != nil {
+		return fmt.Errorf("failed to parse migration files: %w", err)
+	}
+
+	// Step 4: Filter out already-applied migrations
+	var pendingMigrations []migrationInfo
+	for _, m := range migrations {
+		if _, applied := appliedVersions[m.version]; !applied {
+			pendingMigrations = append(pendingMigrations, m)
+		}
+	}
+
+	if len(pendingMigrations) == 0 {
+		log.Println("No new migrations to apply")
+		return nil
+	}
+
+	log.Printf("Found %d new migration(s) to apply", len(pendingMigrations))
+
+	// Step 5: Execute pending migrations in order
+	for _, m := range pendingMigrations {
+		log.Printf("Applying migration: %d_%s", m.version, m.name)
+		if err := applyMigration(db, m); err != nil {
+			return fmt.Errorf("failed to apply migration %d_%s: %w", m.version, m.name, err)
+		}
+		log.Printf("Successfully applied migration: %d_%s", m.version, m.name)
+	}
+
+	return nil
+}
+
+// ensureMigrationsTableExists creates the schema_migrations table if it doesn't exist
+func ensureMigrationsTableExists(db *SQLiteDB) error {
+	query := `
+		CREATE TABLE IF NOT EXISTS schema_migrations (
+			version INTEGER PRIMARY KEY,
+			name TEXT NOT NULL,
+			applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+		);
+	`
+	_, err := db.Write.Exec(query)
+	return err
+}
+
+// getAppliedMigrations returns a map of applied migration versions
+func getAppliedMigrations(db *SQLiteDB) (map[int]bool, error) {
+	query := `SELECT version FROM schema_migrations`
+	rows, err := db.Write.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	applied := make(map[int]bool)
+	for rows.Next() {
+		var version int
+		if err := rows.Scan(&version); err != nil {
+			return nil, err
+		}
+		applied[version] = true
+	}
+
+	return applied, rows.Err()
+}
+
+// parseMigrationFiles reads and parses all .up.sql migration files
+func parseMigrationFiles() ([]migrationInfo, error) {
+	entries, err := fs.ReadDir(migrationsFS, "migrations")
+	if err != nil {
+		return nil, fmt.Errorf("failed to read migrations directory: %w", err)
+	}
+
+	var migrations []migrationInfo
+	// Pattern: 000001_description.up.sql
+	pattern := regexp.MustCompile(`^(\d+)_(.+)\.up\.sql$`)
+
 	for _, entry := range entries {
-		if filepath.Ext(entry.Name()) != ".sql" {
+		matches := pattern.FindStringSubmatch(entry.Name())
+		if matches == nil {
+			continue // Skip files that don't match the pattern
+		}
+
+		version, err := strconv.Atoi(matches[1])
+		if err != nil {
+			log.Printf("Warning: invalid version number in %s, skipping", entry.Name())
 			continue
 		}
 
-		migrationPath := "migrations/" + entry.Name()
-		content, err := migrationsFS.ReadFile(migrationPath)
-		if err != nil {
-			return fmt.Errorf("failed to read migration file %s: %w", entry.Name(), err)
-		}
-
-		// Split content by semicolons to execute each statement separately
-		statements := splitSQL(string(content))
-
-		// Run each statement in transaction for atomicity
-		statusCode, _ := db.Transaction(context.Background(), func(tx *sql.Tx) (int, error) {
-			for _, stmt := range statements {
-				if stmt == "" {
-					continue
-				}
-				_, err := tx.Exec(stmt)
-				if err != nil {
-					return http.StatusInternalServerError, fmt.Errorf("failed to execute statement in migration %s: %w", entry.Name(), err)
-				}
-			}
-			return http.StatusOK, nil
+		migrations = append(migrations, migrationInfo{
+			version:  version,
+			name:     matches[2],
+			fileName: entry.Name(),
 		})
+	}
 
-		if statusCode != http.StatusOK && statusCode != http.StatusAccepted {
-			return fmt.Errorf("migration %s failed with status code: %d", entry.Name(), statusCode)
+	// Sort by version
+	sort.Slice(migrations, func(i, j int) bool {
+		return migrations[i].version < migrations[j].version
+	})
+
+	return migrations, nil
+}
+
+// applyMigration executes a single migration and records it
+func applyMigration(db *SQLiteDB, m migrationInfo) error {
+	// Read migration file content
+	migrationPath := "migrations/" + m.fileName
+	content, err := migrationsFS.ReadFile(migrationPath)
+	if err != nil {
+		return fmt.Errorf("failed to read migration file: %w", err)
+	}
+
+	// Split content by semicolons
+	statements := splitSQL(string(content))
+
+	// Execute migration in a transaction that also records it
+	statusCode, err := db.Transaction(context.Background(), func(tx *sql.Tx) (int, error) {
+		// Execute each SQL statement
+		for _, stmt := range statements {
+			if stmt == "" {
+				continue
+			}
+			// Skip CREATE TABLE IF NOT EXISTS for schema_migrations (we handle it separately)
+			if strings.Contains(stmt, "schema_migrations") && strings.Contains(stmt, "CREATE TABLE") {
+				continue
+			}
+			if _, err := tx.Exec(stmt); err != nil {
+				return http.StatusInternalServerError, fmt.Errorf("failed to execute statement: %w", err)
+			}
 		}
+
+		// Record the migration
+		recordQuery := `INSERT INTO schema_migrations (version, name) VALUES (?, ?)`
+		if _, err := tx.Exec(recordQuery, m.version, m.name); err != nil {
+			return http.StatusInternalServerError, fmt.Errorf("failed to record migration: %w", err)
+		}
+
+		return http.StatusOK, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if statusCode != http.StatusOK && statusCode != http.StatusAccepted {
+		return fmt.Errorf("migration failed with status code: %d", statusCode)
 	}
 
 	return nil
@@ -182,31 +313,30 @@ func InitDatabaseSQLite() error {
 		return fmt.Errorf("failed to create database directory: %w", err)
 	}
 
-	// Check if database file already exists
+	// Check if this is a new database
 	_, err := os.Stat(DATABASE_SQLITE_PATH)
-	if err == nil {
-		log.Println("Database already exists, skipping initialization")
-		return nil
+	isNewDatabase := os.IsNotExist(err)
+	if isNewDatabase {
+		log.Println("Creating new database at:", DATABASE_SQLITE_PATH)
+	} else {
+		log.Println("Database file exists, checking for new migrations...")
 	}
 
-	if !os.IsNotExist(err) {
-		return fmt.Errorf("failed to check database file: %w", err)
-	}
-
-	// Create an empty database file
-	log.Println("Creating new database at:", DATABASE_SQLITE_PATH)
+	// Always create/open the database connection
 	db, err := NewSQLiteDatabases(DATABASE_SQLITE_PATH)
 	if err != nil {
-		return fmt.Errorf("failed to create database: %w", err)
+		return fmt.Errorf("failed to open database: %w", err)
 	}
 
-	// Run initialization scripts
-	log.Println("Running database initialization scripts")
+	// Always run migration checks (will only apply unapplied migrations)
 	if err := runMigrations(db.GetDB()); err != nil {
 		return fmt.Errorf("failed to run migrations: %w", err)
 	}
 
-	log.Println("Database successfully initialized")
+	if isNewDatabase {
+		log.Println("Database successfully initialized")
+	}
+
 	return nil
 }
 

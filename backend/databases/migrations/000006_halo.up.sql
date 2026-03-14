@@ -1,0 +1,1 @@
+ALTER TABLE project_item_costs ADD COLUMN unit_test_new TEXT;

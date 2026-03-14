@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -15,9 +16,9 @@ import (
 	"github.com/momokii/go-rab-maker/backend/repository/ahsp_labor_components"
 	ahsp_material_components "github.com/momokii/go-rab-maker/backend/repository/ahsp_material_components"
 	ahsptemplates "github.com/momokii/go-rab-maker/backend/repository/ahsp_templates"
-	master_work_categories "github.com/momokii/go-rab-maker/backend/repository/master_work_categories"
 	"github.com/momokii/go-rab-maker/backend/repository/master_labor_types"
 	"github.com/momokii/go-rab-maker/backend/repository/master_materials"
+	master_work_categories "github.com/momokii/go-rab-maker/backend/repository/master_work_categories"
 	"github.com/momokii/go-rab-maker/backend/repository/project_item_costs"
 	"github.com/momokii/go-rab-maker/backend/repository/project_work_items"
 	"github.com/momokii/go-rab-maker/backend/repository/projects"
@@ -111,8 +112,6 @@ func (h *ProjectWorkItemsHandler) ProjectDetailPage(c *fiber.Ctx) error {
 		return utils.ResponseErrorModal(c, "Error", "Failed to fetch project details")
 	}
 
-
-
 	// Render the project detail page
 	projectDetailComponent := components.ProjectDetailPage(project, workItems, totalCost)
 	return adaptor.HTTPHandler(templ.Handler(projectDetailComponent))(c)
@@ -181,8 +180,8 @@ func (h *ProjectWorkItemsHandler) ProjectWorkItemCreateModalView(c *fiber.Ctx) e
 		categories,
 		templates,
 		false, // Not edit mode
-		nil, // No existing materials for create
-		nil, // No existing labor for create
+		nil,   // No existing materials for create
+		nil,   // No existing labor for create
 	)
 
 	return adaptor.HTTPHandler(templ.Handler(modal))(c)
@@ -436,6 +435,7 @@ func (h *ProjectWorkItemsHandler) CreateProjectWorkItem(c *fiber.Ctx) error {
 	projectIdStr := c.Params("id")
 	projectId, err := strconv.Atoi(projectIdStr)
 	if err != nil {
+		log.Println("sini1 ", err)
 		return utils.ResponseErrorModal(c, "Error", "Invalid project ID")
 	}
 
@@ -466,11 +466,13 @@ func (h *ProjectWorkItemsHandler) CreateProjectWorkItem(c *fiber.Ctx) error {
 	// Convert values
 	categoryId, err := strconv.Atoi(categoryIdStr)
 	if err != nil {
+		log.Println("sini2 ", err)
 		return utils.ResponseErrorModal(c, "Validation Error", "Invalid category ID")
 	}
 
 	volume, err := strconv.ParseFloat(volumeStr, 64)
 	if err != nil {
+		log.Println("sini3 ", err)
 		return utils.ResponseErrorModal(c, "Validation Error", "Invalid volume value")
 	}
 
@@ -478,6 +480,7 @@ func (h *ProjectWorkItemsHandler) CreateProjectWorkItem(c *fiber.Ctx) error {
 	if ahspTemplateIdStr != "" {
 		templateId, err := strconv.Atoi(ahspTemplateIdStr)
 		if err != nil {
+			log.Println("sini4 ", err)
 			return utils.ResponseErrorModal(c, "Validation Error", "Invalid template ID")
 		}
 		ahspTemplateId = &templateId
@@ -516,8 +519,6 @@ func (h *ProjectWorkItemsHandler) CreateProjectWorkItem(c *fiber.Ctx) error {
 			return fiber.StatusInternalServerError, err
 		}
 
-
-
 		// If AHSP template is selected, calculate and create cost items
 		if ahspTemplateId != nil {
 
@@ -536,6 +537,7 @@ func (h *ProjectWorkItemsHandler) CreateProjectWorkItem(c *fiber.Ctx) error {
 
 		return fiber.StatusOK, nil
 	}); err != nil {
+		log.Println("sini5 ", err)
 		return utils.ResponseErrorModal(c, "Error", "Failed to create work item")
 	}
 
@@ -738,8 +740,6 @@ func (h *ProjectWorkItemsHandler) DeleteProjectWorkItem(c *fiber.Ctx) error {
 			return fiber.StatusInternalServerError, err
 		}
 
-
-
 		return fiber.StatusOK, nil
 	}); err != nil {
 		return utils.ResponseErrorModal(c, "Error", "Failed to delete work item")
@@ -752,14 +752,12 @@ func (h *ProjectWorkItemsHandler) DeleteProjectWorkItem(c *fiber.Ctx) error {
 // calculateAndCreateCosts calculates and creates cost items based on AHSP template
 func (h *ProjectWorkItemsHandler) calculateAndCreateCosts(tx *sql.Tx, templateId int, volume float64, workItemId int) error {
 
-
 	// Get material components for the template
 	materialComponents, err := h.ahspMaterialComponentsRepo.FindByTemplateId(tx, templateId)
 	if err != nil {
 
 		return err
 	}
-
 
 	// Get labor components for the template
 	laborComponents, err := h.ahspLaborComponentsRepo.FindByTemplateId(tx, templateId)
@@ -768,12 +766,10 @@ func (h *ProjectWorkItemsHandler) calculateAndCreateCosts(tx *sql.Tx, templateId
 		return err
 	}
 
-
 	var costItems []models.ProjectItemCostCreate
 
 	// Process material components
 	for _, component := range materialComponents {
-
 
 		// Get material details
 		material, err := h.masterMaterialsRepo.FindById(tx, component.MaterialId)
@@ -784,7 +780,6 @@ func (h *ProjectWorkItemsHandler) calculateAndCreateCosts(tx *sql.Tx, templateId
 
 		quantityNeeded := component.Coefficient * volume
 		totalCost := quantityNeeded * material.DefaultUnitPrice
-
 
 		costItems = append(costItems, models.ProjectItemCostCreate{
 			WorkItemId:          workItemId,
@@ -801,7 +796,6 @@ func (h *ProjectWorkItemsHandler) calculateAndCreateCosts(tx *sql.Tx, templateId
 	// Process labor components
 	for _, component := range laborComponents {
 
-
 		// Get labor type details
 		laborType, err := h.masterLaborTypesRepo.FindById(tx, component.LaborTypeId)
 		if err != nil {
@@ -811,7 +805,6 @@ func (h *ProjectWorkItemsHandler) calculateAndCreateCosts(tx *sql.Tx, templateId
 
 		quantityNeeded := component.Coefficient * volume
 		totalCost := quantityNeeded * laborType.DefaultDailyWage
-
 
 		costItems = append(costItems, models.ProjectItemCostCreate{
 			WorkItemId:          workItemId,

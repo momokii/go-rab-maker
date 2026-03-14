@@ -207,6 +207,34 @@ The application displays all monetary values in Indonesian Rupiah format with th
 - **No decimals**: All amounts are rounded to whole numbers
 - Applied across: Dashboard, Project Details, Material Summaries, and all cost displays
 
+## Database Migrations
+
+The application uses a custom migration system with embedded SQL files:
+
+### Migration Files
+Located in `backend/databases/migrations/`:
+- `000001_basic_schema.up.sql` - Initial database schema
+- `000001_basic_schema.down.sql` - Rollback for initial schema
+- `000002_add_user_soft_delete.up.sql` - Adds soft delete capability
+- `000002_add_user_soft_delete.down.sql` - Rollback soft delete
+- `000003_add_unit_to_project_item_costs.up.sql` - Adds unit column
+- `000003_add_unit_to_project_item_costs.down.sql` - Rollback unit column
+
+### How Migrations Work
+1. **Automatic on startup**: Migrations run automatically when the application starts
+2. **Only on fresh database**: Migrations only run if the database file doesn't exist
+3. **Embedded files**: Migration files are embedded in the binary using `go:embed`
+4. **Up migrations only**: Only `.up.sql` files are executed during initialization
+5. **Down migrations**: The `.down.sql` files are kept for reference and potential future manual rollback functionality
+
+### Adding New Migrations
+1. Create new migration files following the naming pattern: `000004_description.up.sql` and `000004_description.down.sql`
+2. Place them in `backend/databases/migrations/`
+3. Rebuild the application
+4. To test, delete the database file and restart the application
+
+**Important**: `.down.sql` files are NOT executed during initialization. They are kept for documentation and potential future rollback use.
+
 ## Database Schema
 
 The application uses SQLite with the following main tables:
